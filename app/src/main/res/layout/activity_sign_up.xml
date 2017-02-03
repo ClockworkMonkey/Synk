@@ -70,7 +70,7 @@
             android:padding="1dp"
             style="?android:attr/borderlessButtonStyle"
             android:text="Already Have an Account? Sign in!"
-            android:onClick="login_back_click (sign_up)" />
+            android:onClick="back_to_login_click" />
 
     </LinearLayout>
 </ScrollView>

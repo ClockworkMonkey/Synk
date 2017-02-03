@@ -106,12 +106,9 @@ public class sign_up extends AppCompatActivity {
 */
 
 
-
-
-    public void login_back_click(View arg0)
+    public void back_to_login_click(View v)
     {
-        Intent intent = new Intent(sign_up.this,log_in.class);
-        startActivity(intent);
-        sign_up.this.finish();
+        Intent intnt = new Intent(sign_up.this, log_in.class);
+        startActivity(intnt);
     }
 }
