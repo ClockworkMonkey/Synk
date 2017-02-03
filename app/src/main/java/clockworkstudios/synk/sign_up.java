@@ -2,6 +2,8 @@ package clockworkstudios.synk;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -11,11 +13,27 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import butterknife.ButterKnife;
 import butterknife.BindView;
 
 public class sign_up extends AppCompatActivity {
 
+    public static final int CONNECTION_TIMEOUT = 10000;
+    public static final int READ_TIMEOUT = 15000;
+    private EditText etEmail;
+    private EditText etPassword;
+    private EditText etName;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -23,92 +41,154 @@ public class sign_up extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up);
         ButterKnife.bind(this);
 
+        etEmail = (EditText) findViewById(R.id.input_email);
+        etPassword = (EditText) findViewById(R.id.input_password);
+        etName = (EditText) findViewById(R.id.input_name);
+
+    }
+
+    // Triggers when LOGIN Button clicked
+    public void checksignup(View v) {
+
+        // Get text from email and passord field
+        final String email = etEmail.getText().toString();
+        final String password = etPassword.getText().toString();
+        final String name = etName.getText().toString();
+
+        // Initialize  AsyncLogin() class with email and password
+        new sign_up.AsyncSignUp().execute(email, password, name);
+
+    }
+
+    private class AsyncSignUp extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(sign_up.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://synk-app.com/SignUp.php");
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return "exception";
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0])
+                        .appendQueryParameter("password", params[1])
+                        .appendQueryParameter("name", params[3]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return "exception";
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return ("unsuccessful");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "exception";
+            } finally {
+                conn.disconnect();
             }
 
 
-/*
-    public void sign_up() {
-        Log.d(TAG, "Signup");
-
-        if (!validate()) {
-            onSignupFailed();
-            return;
         }
 
-        _signupButton.setEnabled(false);
+        @Override
+        protected void onPostExecute(String result) {
 
-        final ProgressDialog progressDialog = new ProgressDialog(sign_up.this);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage("Creating Account...");
-        progressDialog.show();
+            //this method will be running on UI thread
 
-        String name = _nameText.getText().toString();
-        String email = _emailText.getText().toString();
-        String password = _passwordText.getText().toString();
+            pdLoading.dismiss();
+            Toast tst;
 
-        // TODO: Implement your own signup logic here.
+            if (result.equalsIgnoreCase("true")) {
+                /* Here launching another activity when login successful. If you persist login state
+                use sharedPreferences of Android. and logout button to clear sharedPreferences.
+                 */
 
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        // On complete call either onSignupSuccess or onSignupFailed 
-                        // depending on success
-                        onSignupSuccess();
-                        // onSignupFailed();
-                        progressDialog.dismiss();
-                    }
-                }, 3000);
-    }
+                Intent intent = new Intent(sign_up.this, log_in.class);
+                startActivity(intent);
+                sign_up.this.finish();
 
+            } else if (result.equalsIgnoreCase("false")) {
 
-    public void onSignupSuccess() {
-        _signupButton.setEnabled(true);
-        setResult(RESULT_OK, null);
-        finish();
-    }
+                // If username and password does not match display a error message
+                Toast.makeText(sign_up.this, "Email is already in use", Toast.LENGTH_LONG).show();
 
-    public void onSignupFailed() {
-        Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
+            } else if (result.equalsIgnoreCase("exception") || result.equalsIgnoreCase("unsuccessful")) {
 
-        _signupButton.setEnabled(true);
-    }
+                Toast.makeText(sign_up.this, "OOPs! Something went wrong. Connection Problem.", Toast.LENGTH_LONG).show();
 
-    public boolean validate() {
-        boolean valid = true;
-
-        String name = _nameText.getText().toString();
-        String email = _emailText.getText().toString();
-        String password = _passwordText.getText().toString();
-
-        if (name.isEmpty() || name.length() < 3) {
-            _nameText.setError("at least 3 characters");
-            valid = false;
-        } else {
-            _nameText.setError(null);
+            }
         }
 
-        if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            _emailText.setError("enter a valid email address");
-            valid = false;
-        } else {
-            _emailText.setError(null);
+        public void back_to_login_click(View v) {
+            Intent intnt = new Intent(sign_up.this, log_in.class);
+            startActivity(intnt);
         }
-
-        if (password.isEmpty() || password.length() < 4 || password.length() > 10) {
-            _passwordText.setError("between 4 and 10 alphanumeric characters");
-            valid = false;
-        } else {
-            _passwordText.setError(null);
-        }
-
-        return valid;
-    }
-*/
-
-
-    public void back_to_login_click(View v)
-    {
-        Intent intnt = new Intent(sign_up.this, log_in.class);
-        startActivity(intnt);
     }
 }
