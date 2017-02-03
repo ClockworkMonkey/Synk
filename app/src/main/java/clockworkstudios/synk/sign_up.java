@@ -1,6 +1,7 @@
 package clockworkstudios.synk;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,13 +15,7 @@ import butterknife.ButterKnife;
 import butterknife.BindView;
 
 public class sign_up extends AppCompatActivity {
-    private static final String TAG = "sign_up";
 
-    @BindView(R.id.input_name) EditText _nameText;
-    @BindView(R.id.input_email) EditText _emailText;
-    @BindView(R.id.input_password) EditText _passwordText;
-    @BindView(R.id.btn_signup) Button _signupButton;
-    @BindView(R.id.link_login) TextView _loginLink;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -28,22 +23,10 @@ public class sign_up extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up);
         ButterKnife.bind(this);
 
-        _signupButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sign_up();
             }
-        });
 
-        _loginLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Finish the registration screen and return to the Login activity
-                finish();
-            }
-        });
-    }
 
+/*
     public void sign_up() {
         Log.d(TAG, "Signup");
 
@@ -119,5 +102,16 @@ public class sign_up extends AppCompatActivity {
         }
 
         return valid;
+    }
+*/
+
+
+
+
+    public void login_back_click(View arg0)
+    {
+        Intent intent = new Intent(sign_up.this,log_in.class);
+        startActivity(intent);
+        sign_up.this.finish();
     }
 }
