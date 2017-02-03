@@ -29,6 +29,38 @@
             android:id="@+id/busy_free_switch"
             android:checked="false" />
 
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="2dp">
+            <EditText android:id="@+id/input_friend_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"
+                android:hint="Add friend by email" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/btn_add_friend"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="24dp"
+            android:padding="12dp"
+            android:text="Add Friend"
+            android:onClick="add_friend_click (MainMenu)" />
+
+        <ListView
+            android:id="@+id/friendlist"
+            android:scrollbars="vertical"
+            android:paddingTop="20dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="fill_vertical"
+            android:layout_alignParentBottom="true">
+        </ListView>
 
     </LinearLayout>
 </ScrollView>

@@ -34,6 +34,7 @@ public class sign_up extends AppCompatActivity {
     private EditText etEmail;
     private EditText etPassword;
     private EditText etName;
+    public Utills utils;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,9 +56,15 @@ public class sign_up extends AppCompatActivity {
         final String password = etPassword.getText().toString();
         final String name = etName.getText().toString();
 
-        // Initialize  AsyncLogin() class with email and password
-        new sign_up.AsyncSignUp().execute(email, password, name);
+        if (!utils.checkEmail(email))
+        {
+            Toast.makeText(sign_up.this, "Invalid email", Toast.LENGTH_LONG).show();
 
+        }
+        else {
+            // Initialize  AsyncLogin() class with email and password
+            new sign_up.AsyncSignUp().execute(email, password, name);
+        }
     }
 
     private class AsyncSignUp extends AsyncTask<String, String, String> {

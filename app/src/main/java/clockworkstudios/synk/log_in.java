@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import butterknife.ButterKnife;
 import butterknife.BindView;
+import butterknife.internal.Utils;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -36,10 +37,13 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class log_in extends AppCompatActivity {
 
     public static final String PREFS_USERNAME_KEY = "__USERNAME__";
+    public Utills utils;
 
     public static final int CONNECTION_TIMEOUT=10000;
     public static final int READ_TIMEOUT=15000;
@@ -71,8 +75,15 @@ public class log_in extends AppCompatActivity {
         final String email = etEmail.getText().toString();
         final String password = etPassword.getText().toString();
 
-        // Initialize  AsyncLogin() class with email and password
-        new AsyncLogin().execute(email,password);
+        if (!utils.checkEmail(email))
+        {
+            Toast.makeText(log_in.this, "Invalid email", Toast.LENGTH_LONG).show();
+        }
+        else {
+
+            // Initialize  AsyncLogin() class with email and password
+            new AsyncLogin().execute(email, password);
+        }
 
     }
 
@@ -213,6 +224,9 @@ public class log_in extends AppCompatActivity {
         }
 
     }
+
+
+
 
 
 }
