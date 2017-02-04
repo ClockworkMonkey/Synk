@@ -1,6 +1,8 @@
 package clockworkstudios.synk;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -10,6 +12,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.StringBuilderPrinter;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
@@ -29,9 +32,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 import static android.R.attr.defaultValue;
 import static android.R.attr.key;
+import static android.R.attr.preferenceCategoryStyle;
+import static android.R.attr.titleTextAppearance;
 
 public class MainMenu extends AppCompatActivity {
 
@@ -42,6 +48,8 @@ public class MainMenu extends AppCompatActivity {
     private ListView lv;
     ArrayList<String> listAdapter;
     public Utills utis;
+    public String logged_in_user;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +57,7 @@ public class MainMenu extends AppCompatActivity {
         setContentView(R.layout.activity_main_menu);
         //on load, get current status from database
 
-        String logged_in_user = "none";
+        logged_in_user = "none";
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(MainMenu.this );
         try {
@@ -61,6 +69,8 @@ public class MainMenu extends AppCompatActivity {
         (new AsyncGetFriends()).execute(logged_in_user);
         (new AsyncGetStatus()).execute(logged_in_user);
         (new AsyncCheckForNewRequests()).execute(logged_in_user);
+
+
 
     }
 
@@ -311,7 +321,173 @@ public class MainMenu extends AppCompatActivity {
         }
     }
 
-    private class AsyncCheckForNewRequests extends AsyncTask<String, String, String> {
+    private class AsyncCheckForNewRequests extends AsyncTask<String, String, List<String>> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected List<String> doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://synk-app.com/CheckForRequests.php");
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return null;
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return null;
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    List<String> result = new ArrayList<String>();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.add(line);
+                    }
+
+                    // Pass data to onPostExecute method, will pass the name of the person requesting
+                    return result;
+
+                } else {
+
+                    return null;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                conn.disconnect();
+            }
+
+
+        }
+
+        @Override
+        protected void onPostExecute(List<String> result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+            Toast tst;
+
+            if (!result.isEmpty()) {
+
+                final List<String> selected = new ArrayList<String>();
+                final List<String> declined = new ArrayList<String>();
+                final List<String> results = result;
+                final boolean[] itemChecked = new boolean[result.size()];
+
+                int i = 1;
+
+                for (final String user : result)
+                {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainMenu.this);
+
+                    StringBuilder title = new StringBuilder();
+                    title.append("Request ");
+                    title.append(i);
+                    title.append(" of ");
+                    title.append(results.size());
+                    title.append(".");
+
+                    StringBuilder message = new StringBuilder();
+                    title.append(user);
+                    title.append(" would like to be your friend");
+
+                    builder.setTitle(title)
+                            .setMessage(message);
+                    builder.setPositiveButton("Accept", new DialogInterface.OnClickListener(){
+                        public void onClick(DialogInterface dialog, int id) {
+                            // add accepted  fried to list
+                            selected.add(user);
+                        }
+                    });
+
+                    builder.setNegativeButton("Decline", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            declined.add(user);
+                        }
+                    });
+
+                    AlertDialog dialog = builder.create();
+
+                    dialog.show();
+                }
+
+                for (String y: selected)
+                {
+                    (new AsyncConfirmFriend()).execute(y, logged_in_user);
+                }
+
+                for(String n: declined)
+                {
+                    (new AsyncDenyFriend()).execute(n, logged_in_user);
+                }
+
+            } else {
+
+                // If username and password does not match display a error message
+                Toast.makeText(MainMenu.this, "No new requests", Toast.LENGTH_LONG).show();
+
+            }
+        }
+    }
+
+    private class AsyncConfirmFriend extends AsyncTask<String, String, String> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
         HttpURLConnection conn;
         URL url = null;
@@ -332,7 +508,7 @@ public class MainMenu extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/CheckForRequests.php");
+                url = new URL("http://synk-app.com/ConfirmFriend.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
@@ -352,7 +528,8 @@ public class MainMenu extends AppCompatActivity {
 
                 // Append parameters to URL
                 Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("username", params[0]);
+                        .appendQueryParameter("friend", params[0])
+                        .appendQueryParameter("user", params[1]);
                 String query = builder.build().getEncodedQuery();
 
                 // Open connection for sending data
@@ -412,18 +589,115 @@ public class MainMenu extends AppCompatActivity {
             //this method will be running on UI thread
 
             pdLoading.dismiss();
-            Toast tst;
-
-            if (result.equalsIgnoreCase("true")) {
-                Toast.makeText(MainMenu.this, "Request sent", Toast.LENGTH_LONG).show();
 
 
-            } else if (result.equalsIgnoreCase("false")) {
 
-                // If username and password does not match display a error message
-                Toast.makeText(MainMenu.this, "User does not exist", Toast.LENGTH_LONG).show();
+        }
+    }
 
+    private class AsyncDenyFriend extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://synk-app.com/DenyFriend.php");
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return "exception";
             }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("friend", params[0])
+                        .appendQueryParameter("user", params[1]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return "exception";
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return ("unsuccessful");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "exception";
+            } finally {
+                conn.disconnect();
+            }
+
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
         }
     }
 
