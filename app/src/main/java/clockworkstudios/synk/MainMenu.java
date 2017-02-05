@@ -12,6 +12,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.util.StringBuilderPrinter;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -28,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -70,8 +72,6 @@ public class MainMenu extends AppCompatActivity {
         (new AsyncGetStatus()).execute(logged_in_user);
         (new AsyncCheckForNewRequests()).execute(logged_in_user);
 
-
-
     }
 
     public void add_friend_click(View v)
@@ -89,6 +89,11 @@ public class MainMenu extends AppCompatActivity {
             // Initialize  AsyncLogin() class with email and password
             new MainMenu.AsyncAddFriends().execute(to_add);
         }
+    }
+
+    public void update_friend_statusse_click(View v)
+    {
+        (new AsyncGetFriends()).execute(logged_in_user);
     }
 
     private class AsyncUpdateStatus extends AsyncTask<String, String, String> {
@@ -308,15 +313,19 @@ public class MainMenu extends AppCompatActivity {
             //this method will be running on UI thread
 
             pdLoading.dismiss();
-            Toast tst;
+
+            Toast.makeText(MainMenu.this, "Status synced from server.", Toast.LENGTH_LONG).show();
+
             Switch sw = (Switch)findViewById(R.id.busy_free_switch);
 
             if (result.equalsIgnoreCase("1")) {
                 sw.setChecked(true);
+                sw.setText("Available");
 
 
             } else if (result.equalsIgnoreCase("0")) {
                 sw.setChecked(false);
+                sw.setText("Not Available");
             }
         }
     }
@@ -817,7 +826,7 @@ public class MainMenu extends AppCompatActivity {
         }
     }
 
-    private class AsyncGetFriends extends AsyncTask<String, String, ArrayList<String>> {
+    private class AsyncGetFriends extends AsyncTask<String, String, ArrayList<Pair<String, String>>> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
         HttpURLConnection conn;
         URL url = null;
@@ -834,8 +843,8 @@ public class MainMenu extends AppCompatActivity {
         }
 
         @Override
-        protected ArrayList<String> doInBackground(String... params) {
-            ArrayList<String> res = new ArrayList<String>();
+        protected ArrayList<Pair<String, String>> doInBackground(String... params) {
+            ArrayList<Pair<String, String>> res = new ArrayList<Pair<String, String>>();
 
             try {
 
@@ -891,10 +900,27 @@ public class MainMenu extends AppCompatActivity {
                     InputStream input = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(input));
                     StringBuilder result = new StringBuilder();
-                    String line;
+                    String line = "";
+                    String line2 = "";
 
+                    Pair<String, String> tmp_pair;
+                    Integer toggle = 0;
+
+                    //since we are returning an array of pairs(name and status)
+                    // and we are only reading one line at a time, we toggle between the tmp variable
+                    // and filling the array
                     while ((line = reader.readLine()) != null) {
-                        res.add(line);
+                        if (toggle.equals(0))
+                        {
+                            line2 = line;
+                            toggle = 1;
+                        }
+                        else
+                        {
+                            res.add(new Pair<String, String>(line2, line));
+                            toggle = 0;
+                        }
+
                     }
 
                     // Pass data to onPostExecute method
@@ -911,12 +937,10 @@ public class MainMenu extends AppCompatActivity {
             } finally {
                 conn.disconnect();
             }
-
-
         }
 
         @Override
-        protected void onPostExecute(ArrayList<String> result) {
+        protected void onPostExecute(ArrayList<Pair<String, String>> result) {
 
             //this method will be running on UI thread
 
@@ -924,10 +948,31 @@ public class MainMenu extends AppCompatActivity {
             Toast tst;
 
             if (!result.isEmpty()) {
-                /* Here launching another activity when login successful. If you persist login state
-                use sharedPreferences of Android. and logout button to clear sharedPreferences.
-                 */
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>((MainMenu.this), android.R.layout.simple_list_item_1, result);
+                ArrayList<String> parsed_results = new ArrayList<String>();
+
+                // parse the results we got into an array of single strings,
+                // so that itll be compatible with the arrayadapter items
+                for (Pair<String, String> current : result)
+                {
+                    StringBuilder builder = new StringBuilder();
+
+                    builder.append(current.first);
+
+                    if (current.second.equals("1"))
+                    {
+                        builder.append(" is available!");
+                    }
+                    else
+                    {
+                        builder.append(" is NOT available!");
+                    }
+
+                    parsed_results.add(builder.toString());
+
+                }
+
+                //parse the array of pairs into a array of single strings to be fed to the array adapter
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>((MainMenu.this), android.R.layout.simple_list_item_1, parsed_results);
                 ListView list = (ListView) findViewById(R.id.friendlist);
                 list.setAdapter(adapter);
 
