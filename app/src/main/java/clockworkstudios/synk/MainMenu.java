@@ -87,7 +87,7 @@ public class MainMenu extends AppCompatActivity {
         }
         else {
             // Initialize  AsyncLogin() class with email and password
-            new MainMenu.AsyncAddFriends().execute(to_add);
+            new MainMenu.AsyncAddFriends().execute(logged_in_user, to_add);
         }
     }
 
@@ -137,7 +137,8 @@ public class MainMenu extends AppCompatActivity {
 
                 // Append parameters to URL
                 Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("status", params[0]);
+                        .appendQueryParameter("status", params[0])
+                        .appendQueryParameter("username", params[1]);
                 String query = builder.build().getEncodedQuery();
 
                 // Open connection for sending data
@@ -253,7 +254,7 @@ public class MainMenu extends AppCompatActivity {
 
                 // Append parameters to URL
                 Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("status", params[0]);
+                        .appendQueryParameter("username", params[0]);
                 String query = builder.build().getEncodedQuery();
 
                 // Open connection for sending data
@@ -326,6 +327,10 @@ public class MainMenu extends AppCompatActivity {
             } else if (result.equalsIgnoreCase("0")) {
                 sw.setChecked(false);
                 sw.setText("Not Available");
+            }
+            else if (result.equalsIgnoreCase("failure"))
+            {
+                Toast.makeText(MainMenu.this, "Could not retrieve status, try again later", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -538,7 +543,7 @@ public class MainMenu extends AppCompatActivity {
                 // Append parameters to URL
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("friend", params[0])
-                        .appendQueryParameter("user", params[1]);
+                        .appendQueryParameter("username", params[1]);
                 String query = builder.build().getEncodedQuery();
 
                 // Open connection for sending data
@@ -646,7 +651,7 @@ public class MainMenu extends AppCompatActivity {
                 // Append parameters to URL
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("friend", params[0])
-                        .appendQueryParameter("user", params[1]);
+                        .appendQueryParameter("username", params[1]);
                 String query = builder.build().getEncodedQuery();
 
                 // Open connection for sending data
@@ -751,7 +756,8 @@ public class MainMenu extends AppCompatActivity {
 
                 // Append parameters to URL
                 Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("username", params[0]);
+                        .appendQueryParameter("username", params[0])
+                        .appendQueryParameter("to_add", params[1]);
                 String query = builder.build().getEncodedQuery();
 
                 // Open connection for sending data
@@ -819,9 +825,13 @@ public class MainMenu extends AppCompatActivity {
 
             } else if (result.equalsIgnoreCase("false")) {
 
-                // If username and password does not match display a error message
-                Toast.makeText(MainMenu.this, "User does not exist", Toast.LENGTH_LONG).show();
 
+                Toast.makeText(MainMenu.this, "A request is already pending", Toast.LENGTH_LONG).show();
+
+            }
+            else
+            {
+                Toast.makeText(MainMenu.this, "User does not exist", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -1004,9 +1014,9 @@ public class MainMenu extends AppCompatActivity {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
-                (new AsyncUpdateStatus()).execute("1");
+                (new AsyncUpdateStatus()).execute("1", logged_in_user);
             } else {
-                (new AsyncUpdateStatus()).execute("0");
+                (new AsyncUpdateStatus()).execute("0", logged_in_user);
             }
         }
 
