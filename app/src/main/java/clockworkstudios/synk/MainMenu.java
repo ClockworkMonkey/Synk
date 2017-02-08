@@ -68,8 +68,8 @@ public class MainMenu extends AppCompatActivity {
             e.printStackTrace();
             }
 
-        (new AsyncGetFriends()).execute(logged_in_user);
         (new AsyncGetStatus()).execute(logged_in_user);
+        (new AsyncGetFriends()).execute(logged_in_user);
         (new AsyncCheckForNewRequests()).execute(logged_in_user);
 
     }
@@ -117,7 +117,7 @@ public class MainMenu extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/UpdateStatus.php");
+                url = new URL("http://10.0.2.2/UpdateStatus.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
@@ -234,7 +234,7 @@ public class MainMenu extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/GetStatus.php");
+                url = new URL("http://10.0.2.2/GetStatus.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
@@ -356,7 +356,7 @@ public class MainMenu extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/CheckForRequests.php");
+                url = new URL("http://10.0.2.2/CheckForRequests.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
@@ -522,7 +522,7 @@ public class MainMenu extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/ConfirmFriend.php");
+                url = new URL("http://10.0.2.2/ConfirmFriend.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
@@ -630,7 +630,7 @@ public class MainMenu extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/DenyFriend.php");
+                url = new URL("http://10.0.2.2/DenyFriend.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
@@ -736,7 +736,7 @@ public class MainMenu extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/AddFriend.php");
+                url = new URL("http://10.0.2.2/AddFriend.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
@@ -859,7 +859,7 @@ public class MainMenu extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/GetFriends.php");
+                url = new URL("http://10.0.2.2/GetFriends.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block

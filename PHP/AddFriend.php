@@ -1,8 +1,8 @@
 <?php
-	define('HOST','synk-app.com');
-	define('USER','u813815354_user');
-	define('PASS','bhaq2010');
-	define('DB','Users');
+	define('HOST','localhost');
+	define('USER','root');
+	define('PASS','');
+	define('DB','synk-app');
 
 	$con = mysqli_connect(HOST,USER,PASS,DB);
 	

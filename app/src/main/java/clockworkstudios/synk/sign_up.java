@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Pattern;
 
 import butterknife.ButterKnife;
 import butterknife.BindView;
@@ -48,6 +49,11 @@ public class sign_up extends AppCompatActivity {
 
     }
 
+    public boolean checkEmail(String email)
+    {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
     // Triggers when LOGIN Button clicked
     public void checksignup(View v) {
 
@@ -56,7 +62,7 @@ public class sign_up extends AppCompatActivity {
         final String password = etPassword.getText().toString();
         final String name = etName.getText().toString();
 
-        if (!utils.checkEmail(email))
+        if (!checkEmail(email))
         {
             Toast.makeText(sign_up.this, "Invalid email", Toast.LENGTH_LONG).show();
 
@@ -88,7 +94,7 @@ public class sign_up extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/SignUp.php");
+                url = new URL("http://10.0.2.2/SignUp.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
@@ -110,7 +116,7 @@ public class sign_up extends AppCompatActivity {
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("username", params[0])
                         .appendQueryParameter("password", params[1])
-                        .appendQueryParameter("name", params[3]);
+                        .appendQueryParameter("name", params[2]);
                 String query = builder.build().getEncodedQuery();
 
                 // Open connection for sending data

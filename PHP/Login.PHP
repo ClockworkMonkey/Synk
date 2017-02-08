@@ -1,9 +1,9 @@
 
 <?php
-	define('HOST','synk-app.com');
-	define('USER','u813815354_user');
-	define('PASS','bhaq2010');
-	define('DB','Users');
+	define('HOST','localhost');
+	define('USER','root');
+	define('PASS','');
+	define('DB','synk-app');
 	
 	//checks that the passed in username/password is a valid combo
 	 
@@ -19,9 +19,9 @@
 	$check = mysqli_fetch_array($res);
 	 
 	if(isset($check)){
-		echo 'success';
+		echo 'true';
 	}else{
-		echo 'failure';
+		echo 'false';
 	}
 	 
 	mysqli_close($con);

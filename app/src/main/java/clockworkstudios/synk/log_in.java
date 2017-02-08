@@ -75,7 +75,7 @@ public class log_in extends AppCompatActivity {
         final String email = etEmail.getText().toString();
         final String password = etPassword.getText().toString();
 
-        if (!utils.checkEmail(email))
+        if (!checkEmail(email))
         {
             Toast.makeText(log_in.this, "Invalid email", Toast.LENGTH_LONG).show();
         }
@@ -86,6 +86,12 @@ public class log_in extends AppCompatActivity {
         }
 
     }
+
+    public boolean checkEmail(String email)
+    {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
 
     public void on_click_signup(View v)
     {
@@ -114,7 +120,7 @@ public class log_in extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://synk-app.com/SignUp.php");
+                url = new URL("http://10.0.2.2/Login.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block

@@ -55,7 +55,7 @@
                 android:layout_marginBottom="2dp"
 
                 android:text="Add Friend"
-                android:onClick="add_friend_click (MainMenu)" />
+                android:onClick="add_friend_click" />
 
             <Space
                 android:layout_width="150dp"
@@ -69,7 +69,7 @@
                 android:layout_marginBottom="2dp"
 
                 android:text="Refresh "
-                android:onClick="update_friend_statusse_click (MainMenu)" />
+                android:onClick="update_friend_statusse_click" />
         </LinearLayout>
 
         <ListView

@@ -61,7 +61,7 @@
             android:layout_marginBottom="24dp"
             android:padding="12dp"
             android:text="Create Account"
-            android:onClick="checksignup (sign_up)" />
+            android:onClick="checksignup" />
 
         <Button
             android:layout_width="fill_parent"
