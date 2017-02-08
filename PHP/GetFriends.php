@@ -6,28 +6,33 @@
 
 	$con = mysqli_connect(HOST,USER,PASS,DB);
 	
-	$user = $_POST["username"];	
+	//$user = $_POST["username"];	
 	
-	$query = sprintf($mysqli, "SELECT Friend FROM Friends WHERE Assoc_User = '%s' AND Confirmed = '1'", mysql_real_escape_string($user));
+	$user = "zxc@cxz.com";
+	
+	$query = sprintf("SELECT Friend FROM Friends WHERE Assoc_User = '%s' AND Confirmed = '1'", mysqli_real_escape_string($con, $user));
 
-	$sql = mysqli_query($mysqli, $query);
+	$sql = mysqli_query($con, $query);
 	
 	if(!$sql)
 	{
-		//do nothing if the heve no friends :-(		
+		echo "no_friends";
 	}
 	else
 	{
-		while($row = $sql->fetch_assoc())
+		while($row = $sql->fetch_array())
 		{
 			$Curr_Friend = $row['Friend'];
-			$sql2 = mysqli_query($mysqli, "SELECT Status, Name FROM Users WHERE Username = '$s'", mysql_real_escape_string($Curr_Friend));
-			if(!sql2)
+			$query2 = sprintf( "SELECT Status, Name FROM Users WHERE Username = '%s'", mysqli_real_escape_string($con, $Curr_Friend));
+			
+			$sql2 = mysqli_query($con, $query2);
+			if(!$sql2)
 			{
 			}
 			else{
-				$row2 = $sql2->fetch_assoc
+				$row2 = $sql2->fetch_array();
 				echo $row2['Name'];
+				echo ",";
 				echo $row2['Status'];
 			}
 		}

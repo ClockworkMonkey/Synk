@@ -69,7 +69,7 @@ public class sign_up extends AppCompatActivity {
         }
         else {
             // Initialize  AsyncLogin() class with email and password
-            new sign_up.AsyncSignUp().execute(email, password, name);
+            new sign_up.AsyncSignUp().execute(email.toLowerCase(), password, name);
         }
     }
 

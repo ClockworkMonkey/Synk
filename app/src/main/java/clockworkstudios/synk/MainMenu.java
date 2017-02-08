@@ -16,6 +16,7 @@ import android.util.Pair;
 import android.util.StringBuilderPrinter;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -68,30 +69,73 @@ public class MainMenu extends AppCompatActivity {
             e.printStackTrace();
             }
 
+        final Button button = (Button) findViewById(R.id.btn_add_friend);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                add_friend_click();
+            }
+        });
+
+        final Button button2 = (Button) findViewById(R.id.btn_refresh_friends);
+        button2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                update_friend_statusse_click();
+            }
+        });
+
+        final Switch switch_button = (Switch) findViewById(R.id.busy_free_switch);
+
+        // Set a checked change listener for switch button
+        switch_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    switch_button.setText("Available");
+                    (new AsyncUpdateStatus()).execute("1", logged_in_user);
+                } else {
+                    switch_button.setText("Not Available");
+                    (new AsyncUpdateStatus()).execute("0", logged_in_user);
+                }
+            }
+        });
+
         (new AsyncGetStatus()).execute(logged_in_user);
         (new AsyncGetFriends()).execute(logged_in_user);
         (new AsyncCheckForNewRequests()).execute(logged_in_user);
 
+
+
     }
 
-    public void add_friend_click(View v)
+    public boolean checkEmail(String email)
+    {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    public void add_friend_click()
     {
         EditText list = (EditText) findViewById(R.id.input_friend_name);
 
         String to_add = list.getText().toString();
 
-        if (!utis.checkEmail(to_add))
+        if (!checkEmail(to_add))
         {
             Toast.makeText(MainMenu.this, "Invalid email", Toast.LENGTH_LONG).show();
-
         }
         else {
-            // Initialize  AsyncLogin() class with email and password
-            new MainMenu.AsyncAddFriends().execute(logged_in_user, to_add);
+            if (to_add.equals(logged_in_user))
+            {
+                Toast.makeText(MainMenu.this, "You cannot add yourself as a friend", Toast.LENGTH_LONG).show();
+            }
+            else
+            {
+                new MainMenu.AsyncAddFriends().execute(logged_in_user.toLowerCase(), to_add.toLowerCase());
+            }
+
         }
     }
 
-    public void update_friend_statusse_click(View v)
+    public void update_friend_statusse_click()
     {
         (new AsyncGetFriends()).execute(logged_in_user);
     }
@@ -459,21 +503,21 @@ public class MainMenu extends AppCompatActivity {
                     title.append(".");
 
                     StringBuilder message = new StringBuilder();
-                    title.append(user);
-                    title.append(" would like to be your friend");
+                    message.append(user);
+                    message.append(" would like to be your friend");
 
                     builder.setTitle(title)
                             .setMessage(message);
                     builder.setPositiveButton("Accept", new DialogInterface.OnClickListener(){
                         public void onClick(DialogInterface dialog, int id) {
                             // add accepted  fried to list
-                            selected.add(user);
+                            (new AsyncConfirmFriend()).execute(user, logged_in_user);
                         }
                     });
 
                     builder.setNegativeButton("Decline", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            declined.add(user);
+                            (new AsyncDenyFriend()).execute(user, logged_in_user);
                         }
                     });
 
@@ -482,15 +526,7 @@ public class MainMenu extends AppCompatActivity {
                     dialog.show();
                 }
 
-                for (String y: selected)
-                {
-                    (new AsyncConfirmFriend()).execute(y, logged_in_user);
-                }
 
-                for(String n: declined)
-                {
-                    (new AsyncDenyFriend()).execute(n, logged_in_user);
-                }
 
             } else {
 
@@ -911,7 +947,7 @@ public class MainMenu extends AppCompatActivity {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(input));
                     StringBuilder result = new StringBuilder();
                     String line = "";
-                    String line2 = "";
+                    String[] line2;
 
                     Pair<String, String> tmp_pair;
                     Integer toggle = 0;
@@ -920,17 +956,8 @@ public class MainMenu extends AppCompatActivity {
                     // and we are only reading one line at a time, we toggle between the tmp variable
                     // and filling the array
                     while ((line = reader.readLine()) != null) {
-                        if (toggle.equals(0))
-                        {
-                            line2 = line;
-                            toggle = 1;
-                        }
-                        else
-                        {
-                            res.add(new Pair<String, String>(line2, line));
-                            toggle = 0;
-                        }
-
+                            line2 = line.split(",");
+                            res.add(new Pair<String, String>(line2[0], line2[1]));
                     }
 
                     // Pass data to onPostExecute method
@@ -957,7 +984,7 @@ public class MainMenu extends AppCompatActivity {
             pdLoading.dismiss();
             Toast tst;
 
-            if (!result.isEmpty()) {
+            if (!result.isEmpty() && !result.get(0).first.equals("no_friends")) {
                 ArrayList<String> parsed_results = new ArrayList<String>();
 
                 // parse the results we got into an array of single strings,
@@ -986,12 +1013,13 @@ public class MainMenu extends AppCompatActivity {
                 ListView list = (ListView) findViewById(R.id.friendlist);
                 list.setAdapter(adapter);
 
-
-            } else {
-
-                // If username and password does not match display a error message
+            }
+            else if (!result.isEmpty() && result.get(0).first.equals("no_friends"))
+            {
+                Toast.makeText(MainMenu.this, "No friends to show", Toast.LENGTH_LONG).show();
+            }
+            else {
                 Toast.makeText(MainMenu.this, "Could not retrieve friend list", Toast.LENGTH_LONG).show();
-
             }
         }
     }
@@ -999,7 +1027,6 @@ public class MainMenu extends AppCompatActivity {
     public class SwitchActivity extends ActionBarActivity implements CompoundButton.OnCheckedChangeListener {
 
         Switch mySwitch = null;
-
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {

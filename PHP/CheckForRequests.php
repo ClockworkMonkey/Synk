@@ -5,21 +5,19 @@
 	define('DB','synk-app');
 	
 	$user = $_POST["username"];	
-
+	
+	
 	$con = mysqli_connect(HOST,USER,PASS,DB);
 	
-	$user = $_POST["username"];	
+	$query = sprintf("SELECT * FROM Friends WHERE Friend = '%s' AND Confirmed = '0'", mysqli_real_escape_string($con, $user));
 	
-	$query = sprintf($mysqli, "SELECT * FROM Friends WHERE Assoc_User = '%s' AND Confirmed = '0'", mysql_real_escape_string($user));
-
-	$sql = mysqli_query($mysqli, $query);
-	
-	$check = mysqli_fetch_array($sql);
-	
-	if(isset($check)){
-		while($row = $sql->fetch_assoc())
+	$sql = mysqli_query($con, $query);
+		
+	if(mysqli_num_rows($sql)!=0){		
+		while($row = $sql->fetch_array())
 		{
-			echo $row['Friend'];
+			echo $row['Assoc_User'];
+			//echo "<br/>";
 		}		
 	}
 	else
@@ -27,5 +25,5 @@
 		//do nothing if there are no pending requests
 	}
 	
-	mysqli_close($mysqli);
+	mysqli_close($con);
 ?>

@@ -37,7 +37,7 @@
             <EditText android:id="@+id/input_friend_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapWords"
+                android:inputType="textEmailAddress"
                 android:hint="Add friend by email" />
 
         </android.support.design.widget.TextInputLayout>
@@ -55,7 +55,7 @@
                 android:layout_marginBottom="2dp"
 
                 android:text="Add Friend"
-                android:onClick="add_friend_click" />
+                />
 
             <Space
                 android:layout_width="150dp"
@@ -69,7 +69,7 @@
                 android:layout_marginBottom="2dp"
 
                 android:text="Refresh "
-                android:onClick="update_friend_statusse_click" />
+                />
         </LinearLayout>
 
         <ListView

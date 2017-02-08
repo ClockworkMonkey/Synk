@@ -11,9 +11,9 @@
 	
 	$user = $_POST["username"];	
 	
-	$query = sprintf("SELECT Status FROM Users WHERE UserName = '%s'", mysql_real_escape_string($user));
+	$query = sprintf("SELECT Status FROM Users WHERE UserName = '%s'", mysqli_real_escape_string($con, $user));
 
-	$sql = mysqli_query($mysqli, $query);
+	$sql = mysqli_query($con, $query);
 	
 	if (!$sql) {
 		echo "failure";

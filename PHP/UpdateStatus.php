@@ -11,9 +11,9 @@
 	$status = $_POST["status"];
 	$user = $_POST["username"];	
 	
-	$query = sprintf("UPDATE Users SET Status='%s' WHERE UserName = '%s'", mysql_real_escape_string($status),mysql_real_escape_string($user));
+	$query = sprintf("UPDATE Users SET Status='%s' WHERE UserName = '%s'", mysqli_real_escape_string($con,$status),mysqli_real_escape_string($con, $user));
 	
-	$sql = mysqli_query($mysqli, $query);
+	$sql = mysqli_query($con, $query);
 	
 	if (!$sql) {
 		echo "false";

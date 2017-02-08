@@ -82,7 +82,7 @@ public class log_in extends AppCompatActivity {
         else {
 
             // Initialize  AsyncLogin() class with email and password
-            new AsyncLogin().execute(email, password);
+            new AsyncLogin().execute(email.toLowerCase(), password);
         }
 
     }
