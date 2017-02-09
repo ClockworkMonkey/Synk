@@ -6,9 +6,8 @@
 
 	$con = mysqli_connect(HOST,USER,PASS,DB);
 	
-	//$user = $_POST["username"];	
-	
-	$user = "zxc@cxz.com";
+	$user = $_POST["username"];	
+
 	
 	$query = sprintf("SELECT Friend FROM Friends WHERE Assoc_User = '%s' AND Confirmed = '1'", mysqli_real_escape_string($con, $user));
 
@@ -34,6 +33,7 @@
 				echo $row2['Name'];
 				echo ",";
 				echo $row2['Status'];
+				echo "/";
 			}
 		}
 	}

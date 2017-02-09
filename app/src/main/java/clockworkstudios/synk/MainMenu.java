@@ -348,8 +348,6 @@ public class MainMenu extends AppCompatActivity {
             } finally {
                 conn.disconnect();
             }
-
-
         }
 
         @Override
@@ -948,6 +946,7 @@ public class MainMenu extends AppCompatActivity {
                     StringBuilder result = new StringBuilder();
                     String line = "";
                     String[] line2;
+                    String[] line3;
 
                     Pair<String, String> tmp_pair;
                     Integer toggle = 0;
@@ -956,8 +955,15 @@ public class MainMenu extends AppCompatActivity {
                     // and we are only reading one line at a time, we toggle between the tmp variable
                     // and filling the array
                     while ((line = reader.readLine()) != null) {
-                            line2 = line.split(",");
-                            res.add(new Pair<String, String>(line2[0], line2[1]));
+                            line = line.substring(0, line.length()-1);
+                            line2 = line.split("/");
+                            for(int i = 0; i < line2.length; i++)
+                            {
+                                line3 = line2[i].split(",");
+                                res.add(new Pair<String, String>(line3[0], line3[1]));
+                                line3 = new String[line3.length];
+                            }
+
                     }
 
                     // Pass data to onPostExecute method
