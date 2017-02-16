@@ -15,6 +15,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Pair;
 import android.util.StringBuilderPrinter;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -212,6 +214,16 @@ public class MainMenu extends AppCompatActivity {
 
     }
 
+
+    //method to encode a bitmap image as a string so it can be passed to the server
+    public String getStringImage(Bitmap bmp){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        return encodedImage;
+    }
+
     private class AsyncUpdateStatus extends AsyncTask<String, String, String> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
         HttpURLConnection conn;
@@ -234,6 +246,123 @@ public class MainMenu extends AppCompatActivity {
 
                 // Enter URL address where your php file resides
                 url = new URL("http://10.0.2.2/UpdateStatus.php");
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return "exception";
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("status", params[0])
+                        .appendQueryParameter("username", params[1]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return "exception";
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return ("unsuccessful");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "exception";
+            } finally {
+                conn.disconnect();
+            }
+
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+            Toast tst;
+
+            if (result.equalsIgnoreCase("true")) {
+                Toast.makeText(MainMenu.this, "Status Updated", Toast.LENGTH_LONG).show();
+
+
+            } else if (result.equalsIgnoreCase("false")) {
+
+                // If username and password does not match display a error message
+                Toast.makeText(MainMenu.this, "Unable to update status", Toast.LENGTH_LONG).show();
+
+            }
+        }
+    }
+
+    private class AsyncUpdateProfilePicture extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tUploading picture...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/UpdatePicture.php");
 
             } catch (MalformedURLException e) {
                 // TODO Auto-generated catch block
@@ -445,6 +574,119 @@ public class MainMenu extends AppCompatActivity {
             else if (result.equalsIgnoreCase("failure"))
             {
                 Toast.makeText(MainMenu.this, "Could not retrieve status, try again later", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private class AsyncGetProfilePicture extends AsyncTask<String, String, Bitmap> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/GetPicture.php");
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return null;
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return null;
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return null;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+            Switch sw = (Switch)findViewById(R.id.busy_free_switch);
+
+            if (result != null)
+            {
+
+            }
+            else
+            {
+                Toast.makeText(MainMenu.this, "Could not retrieve image, try again later", Toast.LENGTH_LONG).show();
             }
         }
     }
