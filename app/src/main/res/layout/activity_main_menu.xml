@@ -12,7 +12,23 @@
         android:paddingLeft="24dp"
         android:paddingRight="24dp">
 
-        <!-- sstatus -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1" >
+
+        <ImageView
+            android:id="@+id/profile_pic_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxHeight="128px"
+            android:maxWidth="128px"
+            android:gravity="center_horizontal"
+            android:src="@drawable/default_img" />
+        </LinearLayout>
+
+        <!-- status -->
         <TextView android:id="@+id/label_status"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
