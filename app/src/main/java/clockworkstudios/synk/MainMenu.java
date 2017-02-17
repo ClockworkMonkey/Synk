@@ -41,8 +41,13 @@ import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import static android.R.attr.defaultValue;
 import static android.R.attr.key;
@@ -122,8 +127,11 @@ public class MainMenu extends AppCompatActivity {
                 startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
                //NOTE: Image processing and cropping is done in the child activity
 
+                ImageView img = (ImageView) findViewById(R.id.profile_pic_box);
+                Bitmap bmp = img.getDrawingCache();
+
                 // upload it to server
-                (new AsyncUpdateProfilePicture()).execute(logged_in_user);
+                (new AsyncUpdateProfilePicture()).execute(bmp);
 
             }
         });
@@ -341,7 +349,7 @@ public class MainMenu extends AppCompatActivity {
         }
     }
 
-    private class AsyncUpdateProfilePicture extends AsyncTask<String, String, String> {
+    private class AsyncUpdateProfilePicture extends AsyncTask<Bitmap, String, String> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
         HttpURLConnection conn;
         URL url = null;
@@ -354,105 +362,78 @@ public class MainMenu extends AppCompatActivity {
             pdLoading.setMessage("\tUploading picture...");
             pdLoading.setCancelable(false);
             pdLoading.show();
-
         }
 
         @Override
-        protected String doInBackground(String... params) {
-            try {
+        protected String doInBackground(Bitmap... params) {
+            Bitmap bitmap = params[0];
+            String uploadImage = getStringImage(bitmap);
 
-                // Enter URL address where your php file resides
+            HashMap<String,String> data = new HashMap<>();
+            data.put("image", uploadImage);
+            data.put("username", logged_in_user);
+
+            //String result = rh.sendPostRequest("http://10.0.2.2/GetPicture.php",data);
+            URL url;
+            String response = "";
+            try {
                 url = new URL("http://10.0.2.2/UpdatePicture.php");
 
-            } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                return "exception";
-            }
-            try {
-                // Setup HttpURLConnection class to send and receive data from php and mysql
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(READ_TIMEOUT);
-                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000);
+                conn.setConnectTimeout(15000);
                 conn.setRequestMethod("POST");
-
-                // setDoInput and setDoOutput method depict handling of both send and receive
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
 
-                // Append parameters to URL
-                Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("status", params[0])
-                        .appendQueryParameter("username", params[1]);
-                String query = builder.build().getEncodedQuery();
 
-                // Open connection for sending data
                 OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(query);
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+
+                StringBuilder result = new StringBuilder();
+                boolean first = true;
+                for (Map.Entry<String, String> entry : data.entrySet())
+                {
+                    if (first)
+                        first = false;
+                    else
+                        result.append("&");
+
+                    result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                    result.append("=");
+                    result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                }
+
+
+                writer.write(result.toString());
+
                 writer.flush();
                 writer.close();
                 os.close();
-                conn.connect();
+                int responseCode = conn.getResponseCode();
 
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-                return "exception";
-            }
-
-            try {
-
-                int response_code = conn.getResponseCode();
-
-                // Check if successful connection made
-                if (response_code == HttpURLConnection.HTTP_OK) {
-
-                    // Read data sent from server
-                    InputStream input = conn.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                    StringBuilder result = new StringBuilder();
-                    String line;
-
-                    while ((line = reader.readLine()) != null) {
-                        result.append(line);
-                    }
-
-                    // Pass data to onPostExecute method
-                    return (result.toString());
-
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    response = br.readLine();
                 } else {
-
-                    return ("unsuccessful");
+                    response = "Error Registering";
                 }
-
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                return "exception";
-            } finally {
-                conn.disconnect();
             }
 
-
+            return response;
         }
 
         @Override
         protected void onPostExecute(String result) {
 
             //this method will be running on UI thread
-
             pdLoading.dismiss();
-            Toast tst;
 
-            if (result.equalsIgnoreCase("true")) {
-                Toast.makeText(MainMenu.this, "Status Updated", Toast.LENGTH_LONG).show();
+            if ((result.equalsIgnoreCase("Error Registering"))) {
 
-
-            } else if (result.equalsIgnoreCase("false")) {
-
-                // If username and password does not match display a error message
-                Toast.makeText(MainMenu.this, "Unable to update status", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainMenu.this, "Unable to update picture", Toast.LENGTH_LONG).show();
 
             }
         }
@@ -596,80 +577,21 @@ public class MainMenu extends AppCompatActivity {
 
         @Override
         protected Bitmap doInBackground(String... params) {
+            String username = params[0];
+            String add = "http://10.0.2.2/GetPicture.php?username="+username;
+            URL url = null;
+            Bitmap image = null;
             try {
-
-                // Enter URL address where your php file resides
-                url = new URL("http://10.0.2.2/GetPicture.php");
-
+                url = new URL(add);
+                image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
-                return null;
-            }
-            try {
-                // Setup HttpURLConnection class to send and receive data from php and mysql
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(READ_TIMEOUT);
-                conn.setConnectTimeout(CONNECTION_TIMEOUT);
-                conn.setRequestMethod("POST");
-
-                // setDoInput and setDoOutput method depict handling of both send and receive
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
-
-                // Append parameters to URL
-                Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("username", params[0]);
-                String query = builder.build().getEncodedQuery();
-
-                // Open connection for sending data
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(query);
-                writer.flush();
-                writer.close();
-                os.close();
-                conn.connect();
-
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-                return null;
-            }
-
-            try {
-
-                int response_code = conn.getResponseCode();
-
-                // Check if successful connection made
-                if (response_code == HttpURLConnection.HTTP_OK) {
-
-                    // Read data sent from server
-                    InputStream input = conn.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                    StringBuilder result = new StringBuilder();
-                    String line;
-
-                    while ((line = reader.readLine()) != null) {
-                        result.append(line);
-                    }
-
-                    // Pass data to onPostExecute method
-                    return (result.toString());
-
-                } else {
-
-                    return null;
-                }
-
             } catch (IOException e) {
                 e.printStackTrace();
-                return null;
-            } finally {
-                conn.disconnect();
             }
+            return image;
         }
+
 
         @Override
         protected void onPostExecute(Bitmap result) {
@@ -682,7 +604,8 @@ public class MainMenu extends AppCompatActivity {
 
             if (result != null)
             {
-
+                ImageView img = (ImageView) findViewById(R.id.profile_pic_box);
+                img.setImageBitmap(result);
             }
             else
             {
@@ -1264,6 +1187,8 @@ public class MainMenu extends AppCompatActivity {
 
                     Pair<String, String> tmp_pair;
                     Integer toggle = 0;
+
+                    // TODO retrieve and store friend pictures as well
 
                     //since we are returning an array of pairs(name and status)
                     // and we are only reading one line at a time, we toggle between the tmp variable
