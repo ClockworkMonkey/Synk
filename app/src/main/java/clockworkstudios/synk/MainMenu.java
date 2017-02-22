@@ -1,17 +1,22 @@
 package clockworkstudios.synk;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -53,6 +58,7 @@ import static android.R.attr.defaultValue;
 import static android.R.attr.key;
 import static android.R.attr.preferenceCategoryStyle;
 import static android.R.attr.titleTextAppearance;
+import static clockworkstudios.synk.R.drawable.default_img;
 
 public class MainMenu extends AppCompatActivity {
 
@@ -68,6 +74,7 @@ public class MainMenu extends AppCompatActivity {
     public String logged_in_user;
     private static int RESULT_LOAD_IMG = 1;
     String imgDecodableString;
+    ImageView imgView;
 
 
     @Override
@@ -84,6 +91,8 @@ public class MainMenu extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
             }
+
+        imgView = (ImageView) findViewById(R.id.profile_pic_box);
 
         final Button button = (Button) findViewById(R.id.btn_add_friend);
         button.setOnClickListener(new View.OnClickListener() {
@@ -119,6 +128,34 @@ public class MainMenu extends AppCompatActivity {
         final ImageView imageview_profile= (ImageView) findViewById(R.id.profile_pic_box);
         imageview_profile.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= 23){
+                // Here, thisActivity is the current activity
+                    if (ContextCompat.checkSelfPermission(MainMenu.this,
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+
+                        // Should we show an explanation?
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(MainMenu.this,
+                                Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+                            // Show an expanation to the user *asynchronously* -- don't block
+                            // this thread waiting for the user's response! After the user
+                            // sees the explanation, try again to request the permission.
+
+                        } else {
+
+                            // No explanation needed, we can request the permission.
+
+                            ActivityCompat.requestPermissions(MainMenu.this,
+                                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                    1);
+
+                            // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
+                            // app-defined int constant. The callback method gets the
+                            // result of the request.
+                        }
+                    }
+                }
                 // select new image
                 // Create intent to Open Image applications like Gallery, Google Photos
                 Intent galleryIntent = new Intent(Intent.ACTION_PICK,
@@ -127,11 +164,7 @@ public class MainMenu extends AppCompatActivity {
                 startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
                //NOTE: Image processing and cropping is done in the child activity
 
-                ImageView img = (ImageView) findViewById(R.id.profile_pic_box);
-                Bitmap bmp = img.getDrawingCache();
 
-                // upload it to server
-                (new AsyncUpdateProfilePicture()).execute(bmp);
 
             }
         });
@@ -181,45 +214,56 @@ public class MainMenu extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        try {
-            // When an Image is picked
-            if (requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK
-                    && null != data) {
-                // Get the Image from data
 
-                Uri selectedImage = data.getData();
-                String[] filePathColumn = { MediaStore.Images.Media.DATA };
+        if (requestCode == RESULT_LOAD_IMG && resultCode == RESULT_OK && data != null && data.getData() != null) {
 
-                // Get the cursor
-                Cursor cursor = getContentResolver().query(selectedImage,
-                        filePathColumn, null, null, null);
-                // Move to first row
-                cursor.moveToFirst();
+            Uri uri = data.getData();
 
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                imgDecodableString = cursor.getString(columnIndex);
-                cursor.close();
-                ImageView imgView = (ImageView) findViewById(R.id.profile_pic_box);
+            imgView.buildDrawingCache();
+            final Bitmap old = imgView.getDrawingCache();
 
-                Bitmap src = BitmapFactory.decodeFile(imgDecodableString);
+            imgView.setImageURI(uri);
 
-                int cropW = (img_width_and_height - img_width_and_height) / 2;
-                cropW = (cropW < 0)? 0: cropW;
-                int cropH = (img_width_and_height - img_width_and_height) / 2;
-                cropH = (cropH < 0)? 0: cropH;
-                Bitmap crop = Bitmap.createBitmap(src, cropW, cropH, img_width_and_height, img_width_and_height);
+            imgView.buildDrawingCache();
+            final Bitmap bmp = imgView.getDrawingCache();
 
-                imgView.setImageBitmap(crop);
 
-            } else {
-                Toast.makeText(this, "You haven't picked Image",
-                        Toast.LENGTH_LONG).show();
-            }
-        } catch (Exception e) {
-            Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG)
-                    .show();
+            //confirm the new picture
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setTitle("Update your picture?");
+            builder.setMessage("Are you sure?");
+
+            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int which) {
+                    // Do nothing but close the dialog
+                    // upload it to server
+                    (new AsyncUpdateProfilePicture()).execute(bmp);
+                    dialog.dismiss();
+                }
+            });
+
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                    // Do nothing
+                    imgView.setImageBitmap(old);
+                    dialog.dismiss();
+                }
+            });
+
+            AlertDialog alert = builder.create();
+            alert.show();
+
+
+
+        } else {
+            Toast.makeText(this, "You haven't picked Image",
+                    Toast.LENGTH_LONG).show();
         }
-
     }
 
 
@@ -403,8 +447,6 @@ public class MainMenu extends AppCompatActivity {
                     result.append("=");
                     result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 }
-
-
                 writer.write(result.toString());
 
                 writer.flush();

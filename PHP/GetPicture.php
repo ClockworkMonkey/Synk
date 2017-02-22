@@ -12,11 +12,11 @@
 	
 	$sql = mysqli_query($con, $query);
 	
-	$result = mysqli_fetch_array($sql);
+	$result = mysqli_fetch_array($sql);	
 	
 	header('content-type: image/jpeg');
  
-	echo base64_decode($result['image']);
+	echo base64_decode($result['Profile_img']);
 
 	mysqli_close($con);
 ?>
