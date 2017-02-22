@@ -36,7 +36,7 @@
         <TextView android:id="@+id/label_status"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="0dp"
             android:text="Current Status"
             android:gravity="center"
             android:textSize="30sp" />
@@ -47,12 +47,22 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:id="@+id/busy_free_switch"
-            android:checked="false" />
+            android:checked="false"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="17pt"
+            android:gravity="center"
+            android:id="@+id/txt_prefs"
+            android:text="click to add preferences"
+            android:textSize="20sp"
+            />
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="0dp"
             android:layout_marginBottom="2dp">
             <EditText android:id="@+id/input_friend_name"
                 android:layout_width="match_parent"

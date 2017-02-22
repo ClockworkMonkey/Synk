@@ -276,6 +276,31 @@ public class MainMenu extends AppCompatActivity {
         return encodedImage;
     }
 
+    //onclick event for preferences
+    // make a dialog filled with current preferences to be editer
+    // update preferences to database
+
+    // onclick event for listview of friends,
+    // call GetPreferences, GetImage, GetStatus, GetCalander
+    // format and display data in a dialog
+
+    // conclick listener for calander object so that when a date is clicked, display day breakdown
+
+    // update preferences (username, string info)
+
+    // get preferences (username)
+
+    // update calender (calender object Month[list]<Day[list]<Pair<hour, status>>>)
+
+    // get calender (username)
+
+
+    // create event (datetime, string location, string details, string title)
+
+    // get event list (events where username is invited
+
+    // get event singular (event name/ID)
+
     private class AsyncUpdateStatus extends AsyncTask<String, String, String> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
         HttpURLConnection conn;
