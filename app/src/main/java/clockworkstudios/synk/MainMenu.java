@@ -23,6 +23,7 @@ import android.text.InputType;
 import android.util.Base64;
 import android.util.Pair;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -53,12 +54,6 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import static android.R.attr.defaultValue;
-import static android.R.attr.key;
-import static android.R.attr.preferenceCategoryStyle;
-import static android.R.attr.textViewStyle;
-import static android.R.attr.titleTextAppearance;
-import static clockworkstudios.synk.R.drawable.default_img;
 
 public class MainMenu extends AppCompatActivity {
 
@@ -66,19 +61,17 @@ public class MainMenu extends AppCompatActivity {
     public static final int READ_TIMEOUT=15000;
 
     public static final String PREFS_USERNAME_KEY = "__USERNAME__";
-    public static final int img_width_and_height = 128;
 
-    private ListView lv;
+
     private String prefs_friend;
     private int status_friend;
     private Bitmap picture_friend;
+    private static int RESULT_LOAD_IMG = 1;
 
-    public ArrayList<String> listAdapter;
-    public Utills utis;
+
     public String logged_in_user;
 
-    private static int RESULT_LOAD_IMG = 1;
-    private String imgDecodableString;
+
     ImageView imgView;
 
 
@@ -90,6 +83,8 @@ public class MainMenu extends AppCompatActivity {
 
         logged_in_user = "none";
 
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(MainMenu.this );
         try {
             logged_in_user =  sharedPrefs.getString(PREFS_USERNAME_KEY, logged_in_user);
@@ -100,127 +95,148 @@ public class MainMenu extends AppCompatActivity {
         imgView = (ImageView) findViewById(R.id.profile_pic_box);
 
         final Button button = (Button) findViewById(R.id.btn_add_friend);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                add_friend_click();
-            }
-        });
+        if (button != null) {
+            button.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    add_friend_click();
+                }
+            });
+        }
 
-        final Button button2 = (Button) findViewById(R.id.btn_refresh_friends);
-        button2.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                update_friend_statusse_click();
-            }
-        });
+        final Button button2;
+        button2 = (Button) findViewById(R.id.btn_refresh_friends);
+        if (button2 != null) {
+            button2.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    update_friend_statusse_click();
+                }
+            });
+        }
 
         final Switch switch_button = (Switch) findViewById(R.id.busy_free_switch);
 
         // Set a checked change listener for switch button
-        switch_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    switch_button.setText("Available");
-                    (new AsyncUpdateStatus()).execute("1", logged_in_user);
-                } else {
-                    switch_button.setText("Not Available");
-                    (new AsyncUpdateStatus()).execute("0", logged_in_user);
+        if (switch_button != null) {
+            switch_button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        switch_button.setText("Available");
+                        (new AsyncUpdateStatus()).execute("1", logged_in_user);
+                    } else {
+                        switch_button.setText("Not Available");
+                        (new AsyncUpdateStatus()).execute("0", logged_in_user);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         //onclick event for setting profile image
         final ImageView imageview_profile= (ImageView) findViewById(R.id.profile_pic_box);
-        imageview_profile.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (Build.VERSION.SDK_INT >= 23){
-                // Here, thisActivity is the current activity
-                    if (ContextCompat.checkSelfPermission(MainMenu.this,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)
-                            != PackageManager.PERMISSION_GRANTED) {
+        if (imageview_profile != null) {
+            imageview_profile.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    if (Build.VERSION.SDK_INT >= 23){
+                    // Here, thisActivity is the current activity
+                        if (ContextCompat.checkSelfPermission(MainMenu.this,
+                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                                != PackageManager.PERMISSION_GRANTED) {
 
-                        // Should we show an explanation?
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(MainMenu.this,
-                                Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                            // Should we show an explanation?
+                            if (ActivityCompat.shouldShowRequestPermissionRationale(MainMenu.this,
+                                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
-                            // Show an expanation to the user *asynchronously* -- don't block
-                            // this thread waiting for the user's response! After the user
-                            // sees the explanation, try again to request the permission.
+                                // Show an expanation to the user *asynchronously* -- don't block
+                                // this thread waiting for the user's response! After the user
+                                // sees the explanation, try again to request the permission.
 
-                        } else {
+                            } else {
 
-                            // No explanation needed, we can request the permission.
+                                // No explanation needed, we can request the permission.
 
-                            ActivityCompat.requestPermissions(MainMenu.this,
-                                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                    1);
+                                ActivityCompat.requestPermissions(MainMenu.this,
+                                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                        1);
 
-                            // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
-                            // app-defined int constant. The callback method gets the
-                            // result of the request.
+                                // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
+                                // app-defined int constant. The callback method gets the
+                                // result of the request.
+                            }
                         }
                     }
+                    // select new image
+                    // Create intent to Open Image applications like Gallery, Google Photos
+                    Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    // Start the Intent
+                    startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
+                   //NOTE: Image processing and cropping is done in the child activity
                 }
-                // select new image
-                // Create intent to Open Image applications like Gallery, Google Photos
-                Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                // Start the Intent
-                startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
-               //NOTE: Image processing and cropping is done in the child activity
-            }
-        });
+            });
+        }
 
         ListView friendlist = (ListView) findViewById(R.id.friendlist);
 
         //onclick for listview items
-        friendlist.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position,
-                                    long id) {
-                String item = ((TextView)view).getText().toString();
 
-                (new AsyncGetStatus_util()).execute(logged_in_user);
-                (new AsyncGetPrefs_util()).execute(logged_in_user);
-                (new AsyncGetProfilePicture_util()).execute(logged_in_user);
-                //getcalender
+        if (friendlist != null) {
+            friendlist.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position,
+                                        long id) {
+                    String item = ((TextView)view).getText().toString();
 
-                //format and create dialog box
-                String title_String;
-
-                // custom dialog
-                final Dialog dialog = new Dialog(MainMenu.this);
-                dialog.setContentView(R.layout.friend_view);
-
-                //TODO this shit doesnt work right
-
-                if (status_friend == 1)
-                {
-                    title_String = item + " is available";
-                } else {
-                    title_String = item + "is not available";
-                }
-                dialog.setTitle(title_String);
-
-                // set the custom dialog components - text, image and button
-                TextView text = (TextView) dialog.findViewById(R.id.text);
-                text.setText(prefs_friend);
-                ImageView image = (ImageView) dialog.findViewById(R.id.image);
-                image.setImageBitmap(picture_friend);
-
-                Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOK);
-                // if button is clicked, close the custom dialog
-                dialogButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.dismiss();
+                    String name = "";
+                    if(item.contains(" is available!"))
+                    {
+                        name = item.replace(" is available!", "");
+                    } else if (item.contains(" is NOT available!")) {
+                        name = item.replace(" is NOT available!", "");
                     }
-                });
 
-                dialog.show();
-            }
+                    (new AsyncGetStatus_util()).execute(name);
+                    (new AsyncGetPrefs_util()).execute(name);
+                    (new AsyncGetProfilePicture_util()).execute(name);
+                    //getcalender
 
-        });
+                    //format and create dialog box
+                    String title_String;
+
+                    // custom dialog
+                    final Dialog dialog = new Dialog(MainMenu.this);
+                    dialog.setContentView(R.layout.friend_view);
+
+                    //TODO this shit doesnt work right
+
+                    if (status_friend == 1)
+                    {
+                        title_String = item + " is available";
+                    } else {
+                        title_String = item + "is not available";
+                    }
+                    dialog.setTitle(title_String);
+
+                    // set the custom dialog components - text, image and button
+                    TextView text = (TextView) dialog.findViewById(R.id.text);
+                    text.setText(prefs_friend);
+                    ImageView image = (ImageView) dialog.findViewById(R.id.image);
+                    image.setImageBitmap(picture_friend);
+
+                    Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOK);
+                    // if button is clicked, close the custom dialog
+                    dialogButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.dismiss();
+                        }
+                    });
+
+                    dialog.show();
+                }
+
+            });
+        }
+
 
         (new AsyncGetStatus()).execute(logged_in_user);
         (new AsyncGetPrefs()).execute(logged_in_user);
@@ -238,20 +254,25 @@ public class MainMenu extends AppCompatActivity {
     {
         EditText list = (EditText) findViewById(R.id.input_friend_name);
 
-        String to_add = list.getText().toString();
+        String to_add = null;
+        if (list != null) {
+            to_add = list.getText().toString();
+        }
 
         if (!checkEmail(to_add))
         {
             Toast.makeText(MainMenu.this, "Invalid email", Toast.LENGTH_LONG).show();
         }
         else {
-            if (to_add.equals(logged_in_user))
-            {
-                Toast.makeText(MainMenu.this, "You cannot add yourself as a friend", Toast.LENGTH_LONG).show();
-            }
-            else
-            {
-                new MainMenu.AsyncAddFriends().execute(logged_in_user.toLowerCase(), to_add.toLowerCase());
+            if (to_add != null) {
+                if (to_add.equals(logged_in_user))
+                {
+                    Toast.makeText(MainMenu.this, "You cannot add yourself as a friend", Toast.LENGTH_LONG).show();
+                }
+                else
+                {
+                    new AsyncAddFriends().execute(logged_in_user.toLowerCase(), to_add.toLowerCase());
+                }
             }
 
         }
@@ -323,8 +344,7 @@ public class MainMenu extends AppCompatActivity {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] imageBytes = baos.toByteArray();
-        String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        return encodedImage;
+        return Base64.encodeToString(imageBytes, Base64.DEFAULT);
     }
 
     //onclick event for preferences
@@ -341,7 +361,9 @@ public class MainMenu extends AppCompatActivity {
         final EditText input = new EditText(this);
 
 
-        input.setText(current.getText().toString());
+        if (current != null) {
+            input.setText(current.getText().toString());
+        }
 
 
         input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -353,7 +375,9 @@ public class MainMenu extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 String m_Text = input.getText().toString();
                 if (m_Text.length() < 65500) {
-                    current.setText(m_Text);
+                    if (current != null) {
+                        current.setText(m_Text);
+                    }
                     (new AsyncUpdatePrefs()).execute(logged_in_user, m_Text);
                 }
                 else
@@ -404,7 +428,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/UpdatePrefs.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return "exception";
             }
@@ -436,7 +460,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return "exception";
             }
@@ -521,7 +545,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/GetPrefs.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return "exception";
             }
@@ -552,7 +576,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return "exception";
             }
@@ -601,8 +625,12 @@ public class MainMenu extends AppCompatActivity {
 
            TextView prefs = (TextView) findViewById(R.id.txt_prefs);
 
-            if (!result.isEmpty()) {
-                prefs.setText(result);
+            if (!result.isEmpty())
+            {
+                if (prefs != null) {
+                    prefs.setText(result);
+                }
+
             }
             else
             {
@@ -645,7 +673,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/UpdateStatus.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return "exception";
             }
@@ -677,7 +705,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return "exception";
             }
@@ -723,7 +751,6 @@ public class MainMenu extends AppCompatActivity {
             //this method will be running on UI thread
 
             pdLoading.dismiss();
-            Toast tst;
 
             if (result.equalsIgnoreCase("true")) {
                 Toast.makeText(MainMenu.this, "Status Updated", Toast.LENGTH_LONG).show();
@@ -740,8 +767,7 @@ public class MainMenu extends AppCompatActivity {
 
     private class AsyncUpdateProfilePicture extends AsyncTask<Bitmap, String, String> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
-        HttpURLConnection conn;
-        URL url = null;
+
 
         @Override
         protected void onPreExecute() {
@@ -850,7 +876,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/GetStatus.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return "exception";
             }
@@ -881,7 +907,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return "exception";
             }
@@ -931,13 +957,17 @@ public class MainMenu extends AppCompatActivity {
             Switch sw = (Switch)findViewById(R.id.busy_free_switch);
 
             if (result.equalsIgnoreCase("1")) {
-                sw.setChecked(true);
-                sw.setText("Available");
+                if (sw != null) {
+                    sw.setChecked(true);
+                    sw.setText("Available");
+                }
 
 
             } else if (result.equalsIgnoreCase("0")) {
-                sw.setChecked(false);
-                sw.setText("Not Available");
+                if (sw != null) {
+                    sw.setChecked(false);
+                    sw.setText("Not Available");
+                }
             }
             else if (result.equalsIgnoreCase("failure"))
             {
@@ -948,7 +978,6 @@ public class MainMenu extends AppCompatActivity {
 
     private class AsyncGetProfilePicture extends AsyncTask<String, String, Bitmap> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
-        HttpURLConnection conn;
         URL url = null;
 
         @Override
@@ -966,7 +995,7 @@ public class MainMenu extends AppCompatActivity {
         protected Bitmap doInBackground(String... params) {
             String username = params[0];
             String add = "http://10.0.2.2/GetPicture.php?username="+username;
-            URL url = null;
+
             Bitmap image = null;
             try {
                 url = new URL(add);
@@ -987,12 +1016,13 @@ public class MainMenu extends AppCompatActivity {
 
             pdLoading.dismiss();
 
-            Switch sw = (Switch)findViewById(R.id.busy_free_switch);
 
             if (result != null)
             {
                 ImageView img = (ImageView) findViewById(R.id.profile_pic_box);
-                img.setImageBitmap(result);
+                if (img != null) {
+                    img.setImageBitmap(result);
+                }
             }
             else
             {
@@ -1025,7 +1055,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/CheckForRequests.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return null;
             }
@@ -1056,7 +1086,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return null;
             }
@@ -1071,7 +1101,7 @@ public class MainMenu extends AppCompatActivity {
                     // Read data sent from server
                     InputStream input = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                    List<String> result = new ArrayList<String>();
+                    List<String> result = new ArrayList<>();
                     String line;
 
                     while ((line = reader.readLine()) != null) {
@@ -1102,14 +1132,11 @@ public class MainMenu extends AppCompatActivity {
             //this method will be running on UI thread
 
             pdLoading.dismiss();
-            Toast tst;
+
 
             if (!result.isEmpty()) {
 
-                final List<String> selected = new ArrayList<String>();
-                final List<String> declined = new ArrayList<String>();
                 final List<String> results = result;
-                final boolean[] itemChecked = new boolean[result.size()];
 
                 int i = 1;
 
@@ -1183,7 +1210,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/ConfirmFriend.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return "exception";
             }
@@ -1215,7 +1242,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return "exception";
             }
@@ -1291,7 +1318,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/DenyFriend.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return "exception";
             }
@@ -1323,7 +1350,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return "exception";
             }
@@ -1397,7 +1424,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/AddFriend.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return "exception";
             }
@@ -1429,7 +1456,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return "exception";
             }
@@ -1475,7 +1502,6 @@ public class MainMenu extends AppCompatActivity {
             //this method will be running on UI thread
 
             pdLoading.dismiss();
-            Toast tst;
 
             if (result.equalsIgnoreCase("true")) {
                 Toast.makeText(MainMenu.this, "Request sent", Toast.LENGTH_LONG).show();
@@ -1512,7 +1538,7 @@ public class MainMenu extends AppCompatActivity {
 
         @Override
         protected ArrayList<Pair<String, String>> doInBackground(String... params) {
-            ArrayList<Pair<String, String>> res = new ArrayList<Pair<String, String>>();
+            ArrayList<Pair<String, String>> res = new ArrayList<>();
 
             try {
 
@@ -1520,7 +1546,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/GetFriends.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return res;
             }
@@ -1552,7 +1578,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return res;
             }
@@ -1575,7 +1601,7 @@ public class MainMenu extends AppCompatActivity {
                     Pair<String, String> tmp_pair;
                     Integer toggle = 0;
 
-                    // TODO retrieve and store friend pictures as well
+
 
                     //since we are returning an array of pairs(name and status)
                     // and we are only reading one line at a time, we toggle between the tmp variable
@@ -1614,10 +1640,9 @@ public class MainMenu extends AppCompatActivity {
             //this method will be running on UI thread
 
             pdLoading.dismiss();
-            Toast tst;
 
             if (!result.isEmpty() && !result.get(0).first.equals("no_friends")) {
-                ArrayList<String> parsed_results = new ArrayList<String>();
+                ArrayList<String> parsed_results = new ArrayList<>();
 
                 // parse the results we got into an array of single strings,
                 // so that itll be compatible with the arrayadapter items
@@ -1682,7 +1707,7 @@ public class MainMenu extends AppCompatActivity {
                 url = new URL("http://10.0.2.2/GetPrefs.php");
 
             } catch (MalformedURLException e) {
-                // TODO Auto-generated catch block
+
                 e.printStackTrace();
                 return "exception";
             }
@@ -1713,7 +1738,7 @@ public class MainMenu extends AppCompatActivity {
                 conn.connect();
 
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
+
                 e1.printStackTrace();
                 return "exception";
             }
@@ -1758,9 +1783,6 @@ public class MainMenu extends AppCompatActivity {
 
             pdLoading.dismiss();
 
-            //Toast.makeText(MainMenu.this, "Status synced from server.", Toast.LENGTH_LONG).show();
-
-            TextView prefs = (TextView) findViewById(R.id.txt_prefs);
 
             if (!result.isEmpty()) {
                 prefs_friend = result;
@@ -1774,7 +1796,7 @@ public class MainMenu extends AppCompatActivity {
 
     private class AsyncGetProfilePicture_util extends AsyncTask<String, String, Bitmap> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
-        HttpURLConnection conn;
+
         URL url = null;
 
         @Override
@@ -1792,7 +1814,7 @@ public class MainMenu extends AppCompatActivity {
         protected Bitmap doInBackground(String... params) {
             String username = params[0];
             String add = "http://10.0.2.2/GetPicture.php?username="+username;
-            URL url = null;
+
             Bitmap image = null;
             try {
                 url = new URL(add);
@@ -1812,8 +1834,6 @@ public class MainMenu extends AppCompatActivity {
             //this method will be running on UI thread
 
             pdLoading.dismiss();
-
-            Switch sw = (Switch)findViewById(R.id.busy_free_switch);
 
             if (result != null)
             {
@@ -1926,9 +1946,7 @@ public class MainMenu extends AppCompatActivity {
 
             pdLoading.dismiss();
 
-            //Toast.makeText(MainMenu.this, "Status synced from server.", Toast.LENGTH_LONG).show();
 
-            Switch sw = (Switch)findViewById(R.id.busy_free_switch);
 
             if (result.equalsIgnoreCase("1") || result.equalsIgnoreCase("0")) {
                 status_friend = Integer.parseInt(result);
