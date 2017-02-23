@@ -2,29 +2,28 @@ package clockworkstudios.synk;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Base64;
-import android.util.Log;
 import android.util.Pair;
-import android.util.StringBuilderPrinter;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -32,6 +31,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -57,6 +56,7 @@ import javax.net.ssl.HttpsURLConnection;
 import static android.R.attr.defaultValue;
 import static android.R.attr.key;
 import static android.R.attr.preferenceCategoryStyle;
+import static android.R.attr.textViewStyle;
 import static android.R.attr.titleTextAppearance;
 import static clockworkstudios.synk.R.drawable.default_img;
 
@@ -69,11 +69,16 @@ public class MainMenu extends AppCompatActivity {
     public static final int img_width_and_height = 128;
 
     private ListView lv;
-    ArrayList<String> listAdapter;
+    private String prefs_friend;
+    private int status_friend;
+    private Bitmap picture_friend;
+
+    public ArrayList<String> listAdapter;
     public Utills utis;
     public String logged_in_user;
+
     private static int RESULT_LOAD_IMG = 1;
-    String imgDecodableString;
+    private String imgDecodableString;
     ImageView imgView;
 
 
@@ -163,19 +168,65 @@ public class MainMenu extends AppCompatActivity {
                 // Start the Intent
                 startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
                //NOTE: Image processing and cropping is done in the child activity
-
-
-
             }
         });
 
+        ListView friendlist = (ListView) findViewById(R.id.friendlist);
+
+        //onclick for listview items
+        friendlist.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                                    long id) {
+                String item = ((TextView)view).getText().toString();
+
+                (new AsyncGetStatus_util()).execute(logged_in_user);
+                (new AsyncGetPrefs_util()).execute(logged_in_user);
+                (new AsyncGetProfilePicture_util()).execute(logged_in_user);
+                //getcalender
+
+                //format and create dialog box
+                String title_String;
+
+                // custom dialog
+                final Dialog dialog = new Dialog(MainMenu.this);
+                dialog.setContentView(R.layout.friend_view);
+
+                //TODO this shit doesnt work right
+
+                if (status_friend == 1)
+                {
+                    title_String = item + " is available";
+                } else {
+                    title_String = item + "is not available";
+                }
+                dialog.setTitle(title_String);
+
+                // set the custom dialog components - text, image and button
+                TextView text = (TextView) dialog.findViewById(R.id.text);
+                text.setText(prefs_friend);
+                ImageView image = (ImageView) dialog.findViewById(R.id.image);
+                image.setImageBitmap(picture_friend);
+
+                Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOK);
+                // if button is clicked, close the custom dialog
+                dialogButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
+            }
+
+        });
+
         (new AsyncGetStatus()).execute(logged_in_user);
+        (new AsyncGetPrefs()).execute(logged_in_user);
         (new AsyncGetFriends()).execute(logged_in_user);
         (new AsyncCheckForNewRequests()).execute(logged_in_user);
         (new AsyncGetProfilePicture()).execute(logged_in_user);
-
-
-
     }
 
     public boolean checkEmail(String email)
@@ -279,21 +330,290 @@ public class MainMenu extends AppCompatActivity {
     //onclick event for preferences
     // make a dialog filled with current preferences to be editer
     // update preferences to database
+    //65500 chars
+    public void OnClick_update_prefs(View v)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter your preferences");
+
+        final TextView current = (TextView) findViewById(R.id.txt_prefs);
+        // Set up the input
+        final EditText input = new EditText(this);
+
+
+        input.setText(current.getText().toString());
+
+
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String m_Text = input.getText().toString();
+                if (m_Text.length() < 65500) {
+                    current.setText(m_Text);
+                    (new AsyncUpdatePrefs()).execute(logged_in_user, m_Text);
+                }
+                else
+                {
+                    Toast.makeText(MainMenu.this, "String too long, max length is 256 characters", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
 
     // onclick event for listview of friends,
     // call GetPreferences, GetImage, GetStatus, GetCalander
     // format and display data in a dialog
 
-    // conclick listener for calander object so that when a date is clicked, display day breakdown
+
+    // onclick listener for calander object so that when a date is clicked, display day breakdown
 
     // update preferences (username, string info)
+    private class AsyncUpdatePrefs extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/UpdatePrefs.php");
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return "exception";
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0])
+                        .appendQueryParameter("prefs", params[1]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return "exception";
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return ("unsuccessful");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "exception";
+            } finally {
+                conn.disconnect();
+            }
+
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+            if (result.equalsIgnoreCase("true")) {
+                Toast.makeText(MainMenu.this, "Preferences Updated", Toast.LENGTH_LONG).show();
+
+
+            } else {
+
+                // If username and password does not match display a error message
+                Toast.makeText(MainMenu.this, "Unable to update preferences", Toast.LENGTH_LONG).show();
+
+            }
+        }
+    }
 
     // get preferences (username)
+    private class AsyncGetPrefs extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/GetPrefs.php");
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return "exception";
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return "exception";
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return ("unsuccessful");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "exception";
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+           //Toast.makeText(MainMenu.this, "Status synced from server.", Toast.LENGTH_LONG).show();
+
+           TextView prefs = (TextView) findViewById(R.id.txt_prefs);
+
+            if (!result.isEmpty()) {
+                prefs.setText(result);
+            }
+            else
+            {
+                Toast.makeText(MainMenu.this, "Could not retrieve preferences, try again later", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
     // update calender (calender object Month[list]<Day[list]<Pair<hour, status>>>)
 
     // get calender (username)
-
 
     // create event (datetime, string location, string details, string title)
 
@@ -606,7 +926,7 @@ public class MainMenu extends AppCompatActivity {
 
             pdLoading.dismiss();
 
-            Toast.makeText(MainMenu.this, "Status synced from server.", Toast.LENGTH_LONG).show();
+            //Toast.makeText(MainMenu.this, "Status synced from server.", Toast.LENGTH_LONG).show();
 
             Switch sw = (Switch)findViewById(R.id.busy_free_switch);
 
@@ -1332,6 +1652,290 @@ public class MainMenu extends AppCompatActivity {
             }
             else {
                 Toast.makeText(MainMenu.this, "Could not retrieve friend list", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    //util aAsync fucntions, return to variables in stead of directly setting activity objects
+    // get preferences (username)
+    private class AsyncGetPrefs_util extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/GetPrefs.php");
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return "exception";
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return "exception";
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return ("unsuccessful");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "exception";
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+            //Toast.makeText(MainMenu.this, "Status synced from server.", Toast.LENGTH_LONG).show();
+
+            TextView prefs = (TextView) findViewById(R.id.txt_prefs);
+
+            if (!result.isEmpty()) {
+                prefs_friend = result;
+            }
+            else
+            {
+                Toast.makeText(MainMenu.this, "Could not retrieve preferences, try again later", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private class AsyncGetProfilePicture_util extends AsyncTask<String, String, Bitmap> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... params) {
+            String username = params[0];
+            String add = "http://10.0.2.2/GetPicture.php?username="+username;
+            URL url = null;
+            Bitmap image = null;
+            try {
+                url = new URL(add);
+                image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return image;
+        }
+
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+            Switch sw = (Switch)findViewById(R.id.busy_free_switch);
+
+            if (result != null)
+            {
+                picture_friend = result;
+            }
+            else
+            {
+                Toast.makeText(MainMenu.this, "Could not retrieve image, try again later", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private class AsyncGetStatus_util extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/GetStatus.php");
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return "exception";
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return "exception";
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return ("unsuccessful");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "exception";
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+            //Toast.makeText(MainMenu.this, "Status synced from server.", Toast.LENGTH_LONG).show();
+
+            Switch sw = (Switch)findViewById(R.id.busy_free_switch);
+
+            if (result.equalsIgnoreCase("1") || result.equalsIgnoreCase("0")) {
+                status_friend = Integer.parseInt(result);
+            }
+            else if (result.equalsIgnoreCase("failure"))
+            {
+                Toast.makeText(MainMenu.this, "Could not retrieve status, try again later", Toast.LENGTH_LONG).show();
             }
         }
     }

@@ -57,6 +57,9 @@
             android:id="@+id/txt_prefs"
             android:text="click to add preferences"
             android:textSize="20sp"
+            android:clickable="true"
+            android:onClick="OnClick_update_prefs"
+
             />
 
         <android.support.design.widget.TextInputLayout
