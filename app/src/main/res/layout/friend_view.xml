@@ -4,26 +4,34 @@
     android:layout_height="fill_parent" >
 
     <ImageView
-        android:id="@+id/image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="5dp" />
+        android:id="@+id/pop_up_img"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:maxHeight="128dp"
+        android:maxWidth="128dp"
+
+        android:gravity="center_horizontal"
+        android:src="@drawable/default_img"
+        android:scaleType="fitXY"
+        android:adjustViewBounds="true"/>
+
 
     <TextView
-        android:id="@+id/text"
+        android:id="@+id/pop_up_title"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="8dp"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textColor="#FFF"
-        android:layout_toRightOf="@+id/image"/>/>
+        android:layout_toRightOf="@id/pop_up_img"/>
 
-    <Button
-        android:id="@+id/dialogButtonOK"
-        android:layout_width="100px"
+    <TextView
+        android:id="@+id/pop_up_text"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text=" Ok "
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_below="@+id/image"
-        />
+        android:paddingLeft="8dp"
+        android:layout_toRightOf="@id/pop_up_img"
+        android:layout_below="@id/pop_up_title"/>
+
 
 </RelativeLayout>

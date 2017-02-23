@@ -22,7 +22,9 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Base64;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -30,6 +32,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -63,14 +66,11 @@ public class MainMenu extends AppCompatActivity {
     public static final String PREFS_USERNAME_KEY = "__USERNAME__";
 
 
-    private String prefs_friend;
-    private int status_friend;
-    private Bitmap picture_friend;
+    private obj_friend friend_util;
+    private ArrayList<obj_friend> friend_list;
     private static int RESULT_LOAD_IMG = 1;
 
-
     public String logged_in_user;
-
 
     ImageView imgView;
 
@@ -175,65 +175,42 @@ public class MainMenu extends AppCompatActivity {
             });
         }
 
-        ListView friendlist = (ListView) findViewById(R.id.friendlist);
+        final ListView friendlist = (ListView) findViewById(R.id.friendlist);
 
         //onclick for listview items
 
-        if (friendlist != null) {
+        if (friendlist != null)
+        {
             friendlist.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position,
                                         long id) {
                     String item = ((TextView)view).getText().toString();
+                    friend_util = friend_list.get(position);
 
-                    String name = "";
-                    if(item.contains(" is available!"))
-                    {
-                        name = item.replace(" is available!", "");
-                    } else if (item.contains(" is NOT available!")) {
-                        name = item.replace(" is NOT available!", "");
-                    }
-
-                    (new AsyncGetStatus_util()).execute(name);
-                    (new AsyncGetPrefs_util()).execute(name);
-                    (new AsyncGetProfilePicture_util()).execute(name);
+                    (new AsyncGetProfilePicture_util()).execute(friend_util.username);
                     //getcalender
 
                     //format and create dialog box
                     String title_String;
 
-                    // custom dialog
-                    final Dialog dialog = new Dialog(MainMenu.this);
+                   //TODO this shit doesnt work right
+
+                    Dialog dialog = new Dialog(MainMenu.this);
                     dialog.setContentView(R.layout.friend_view);
-
-                    //TODO this shit doesnt work right
-
-                    if (status_friend == 1)
+                    ImageView imgView=(ImageView)dialog.findViewById(R.id.pop_up_img);
+                    //set image to imgView
+                    if (friend_util.picture != null)
                     {
-                        title_String = item + " is available";
-                    } else {
-                        title_String = item + "is not available";
+                        imgView.setImageBitmap(friend_util.picture);
                     }
-                    dialog.setTitle(title_String);
-
-                    // set the custom dialog components - text, image and button
-                    TextView text = (TextView) dialog.findViewById(R.id.text);
-                    text.setText(prefs_friend);
-                    ImageView image = (ImageView) dialog.findViewById(R.id.image);
-                    image.setImageBitmap(picture_friend);
-
-                    Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOK);
-                    // if button is clicked, close the custom dialog
-                    dialogButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            dialog.dismiss();
-                        }
-                    });
-
+                    TextView txtView = (TextView)dialog.findViewById(R.id.pop_up_text);
+                    txtView.setText(friend_util.prefs);
+                    TextView txtView2 = (TextView)dialog.findViewById(R.id.pop_up_title);
+                    txtView2.setText(item);
                     dialog.show();
-                }
 
+                }
             });
         }
 
@@ -1520,7 +1497,7 @@ public class MainMenu extends AppCompatActivity {
         }
     }
 
-    private class AsyncGetFriends extends AsyncTask<String, String, ArrayList<Pair<String, String>>> {
+    private class AsyncGetFriends extends AsyncTask<String, String, ArrayList<obj_friend>> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
         HttpURLConnection conn;
         URL url = null;
@@ -1537,8 +1514,8 @@ public class MainMenu extends AppCompatActivity {
         }
 
         @Override
-        protected ArrayList<Pair<String, String>> doInBackground(String... params) {
-            ArrayList<Pair<String, String>> res = new ArrayList<>();
+        protected ArrayList<obj_friend> doInBackground(String... params) {
+            ArrayList<obj_friend> res = new ArrayList<>();
 
             try {
 
@@ -1600,20 +1577,28 @@ public class MainMenu extends AppCompatActivity {
 
                     Pair<String, String> tmp_pair;
                     Integer toggle = 0;
-
-
+                    obj_friend tmp_fr = new obj_friend();
 
                     //since we are returning an array of pairs(name and status)
                     // and we are only reading one line at a time, we toggle between the tmp variable
                     // and filling the array
+
                     while ((line = reader.readLine()) != null) {
                             line = line.substring(0, line.length()-1);
                             line2 = line.split("/");
+
                             for(int i = 0; i < line2.length; i++)
                             {
                                 line3 = line2[i].split(",");
-                                res.add(new Pair<String, String>(line3[0], line3[1]));
-                                line3 = new String[line3.length];
+                                if(line3.length >3) {
+                                    tmp_fr = new obj_friend();
+                                    tmp_fr.name = line3[0];
+                                    tmp_fr.username = line3[2];
+                                    tmp_fr.status = Integer.parseInt(line3[1]);
+                                    tmp_fr.prefs = line3[3];
+                                    res.add(tmp_fr);
+                                    line3 = new String[line3.length];
+                                }
                             }
 
                     }
@@ -1635,24 +1620,24 @@ public class MainMenu extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Pair<String, String>> result) {
+        protected void onPostExecute(ArrayList<obj_friend> result) {
 
             //this method will be running on UI thread
 
             pdLoading.dismiss();
 
-            if (!result.isEmpty() && !result.get(0).first.equals("no_friends")) {
+            if (!result.isEmpty()) {
                 ArrayList<String> parsed_results = new ArrayList<>();
 
                 // parse the results we got into an array of single strings,
                 // so that itll be compatible with the arrayadapter items
-                for (Pair<String, String> current : result)
+                for (obj_friend current : result)
                 {
                     StringBuilder builder = new StringBuilder();
 
-                    builder.append(current.first);
+                    builder.append(current.name);
 
-                    if (current.second.equals("1"))
+                    if (current.status== 1)
                     {
                         builder.append(" is available!");
                     }
@@ -1670,8 +1655,10 @@ public class MainMenu extends AppCompatActivity {
                 ListView list = (ListView) findViewById(R.id.friendlist);
                 list.setAdapter(adapter);
 
+                friend_list = result;
+
             }
-            else if (!result.isEmpty() && result.get(0).first.equals("no_friends"))
+            else if (result.isEmpty())
             {
                 Toast.makeText(MainMenu.this, "No friends to show", Toast.LENGTH_LONG).show();
             }
@@ -1785,7 +1772,7 @@ public class MainMenu extends AppCompatActivity {
 
 
             if (!result.isEmpty()) {
-                prefs_friend = result;
+                friend_util.prefs = result;
             }
             else
             {
@@ -1837,7 +1824,7 @@ public class MainMenu extends AppCompatActivity {
 
             if (result != null)
             {
-                picture_friend = result;
+                friend_util.picture = result;
             }
             else
             {
@@ -1949,7 +1936,7 @@ public class MainMenu extends AppCompatActivity {
 
 
             if (result.equalsIgnoreCase("1") || result.equalsIgnoreCase("0")) {
-                status_friend = Integer.parseInt(result);
+                friend_util.status = Integer.parseInt(result);
             }
             else if (result.equalsIgnoreCase("failure"))
             {
@@ -1982,5 +1969,13 @@ public class MainMenu extends AppCompatActivity {
         }
 
 
+    }
+
+    class obj_friend{
+        String name;
+        String username;
+        String prefs;
+        Bitmap picture;
+        int status;
     }
 }

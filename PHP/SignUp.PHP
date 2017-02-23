@@ -14,7 +14,7 @@
 	$name = $_POST['name'];
 	 
 
-	$stmt = "INSERT INTO users(name, username, password) VALUES('$name', '$username', '$password')";
+	$stmt = "INSERT INTO users(name, username, password, prefernces) VALUES('$name', '$username', '$password', 'No preferences set')";
 	
 	$sql2 = mysqli_query($con, $stmt);
 

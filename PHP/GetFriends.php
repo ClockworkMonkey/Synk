@@ -7,7 +7,6 @@
 	$con = mysqli_connect(HOST,USER,PASS,DB);
 	
 	$user = $_POST["username"];	
-
 	
 	$query = sprintf("SELECT Friend FROM Friends WHERE Assoc_User = '%s' AND Confirmed = '1'", mysqli_real_escape_string($con, $user));
 
@@ -22,7 +21,7 @@
 		while($row = $sql->fetch_array())
 		{
 			$Curr_Friend = $row['Friend'];
-			$query2 = sprintf( "SELECT Status, Name FROM Users WHERE Username = '%s'", mysqli_real_escape_string($con, $Curr_Friend));
+			$query2 = sprintf( "SELECT * FROM Users WHERE Username = '%s'", mysqli_real_escape_string($con, $Curr_Friend));
 			
 			$sql2 = mysqli_query($con, $query2);
 			if(!$sql2)
@@ -33,6 +32,10 @@
 				echo $row2['Name'];
 				echo ",";
 				echo $row2['Status'];
+				echo ",";
+				echo $row2['Username'];
+				echo ",";
+				echo $row2['Prefernces'];
 				echo "/";
 			}
 		}
