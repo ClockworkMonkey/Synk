@@ -15,8 +15,10 @@
 	 
 
 	$stmt = "INSERT INTO users(name, username, password, prefernces) VALUES('$name', '$username', '$password', 'No preferences set')";
+	$stmt2 = "INSERT INTO schedules(username) VALUES('$username')";
 	
 	$sql2 = mysqli_query($con, $stmt);
+	$sql3 = mysqli_query($con, $stmt2);
 
 	if(!$sql2)
 	{

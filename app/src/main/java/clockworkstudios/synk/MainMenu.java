@@ -194,8 +194,6 @@ public class MainMenu extends AppCompatActivity {
                     //format and create dialog box
                     String title_String;
 
-                   //TODO this shit doesnt work right
-
                     Dialog dialog = new Dialog(MainMenu.this);
                     dialog.setContentView(R.layout.friend_view);
                     ImageView imgView=(ImageView)dialog.findViewById(R.id.pop_up_img);
@@ -371,6 +369,12 @@ public class MainMenu extends AppCompatActivity {
         });
 
         builder.show();
+    }
+
+    public void OnClick_goto_sched(View v)
+    {
+        Intent intnt = new Intent(MainMenu.this, sched.class);
+        startActivity(intnt);
     }
 
     // onclick event for listview of friends,

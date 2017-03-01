@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="2dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="17pt"
+            android:gravity="center"
+            android:id="@+id/txt_instructions_sched"
+            android:text="Select a day to edit its schedule."
+            android:textSize="20sp"
+            android:textColor="#000"
+            />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:id="@+id/txt_instructions_sched2"
+            android:text="When you are done, click 'Update', or hit the back buttont to discard changes."
+            android:textSize="20sp"
+            android:textColor="#000"
+            />
+
+
+        <ListView
+            android:id="@+id/sched_list"
+            android:scrollbars="vertical"
+            android:paddingTop="10dp"
+            android:layout_width="fill_parent"
+            android:layout_height="325dp"
+            android:layout_gravity="fill_vertical"
+            android:entries="@array/day_values"
+            android:layout_alignParentBottom="true">
+        </ListView>
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/btn_update_schedule"
+            android:layout_width="333dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp"
+
+            android:text="Update"
+            android:onClick="OnClick_update_sched (sched)" />
+
+    </LinearLayout>
+</ScrollView>

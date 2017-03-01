@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Synk</string>
-    
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -40,6 +40,76 @@
         <item>0</item>
         <item>-1</item>
     </string-array>
+
+    <string-array name="day_values">
+        <item>
+            <item>Monday\n</item>
+            <item>\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE</item>
+        </item>
+        <item>
+            <item>Tuesday\n</item>
+             <item>\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE</item>
+        </item>
+        <item>
+            <item>Wednesday\n</item>
+             <item>\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE</item>
+        </item>
+        <item>
+            <item>Thursday\n</item>
+             <item>\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE</item>
+        </item>
+        <item>
+            <item>Friday\n</item>
+             <item>\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE</item>
+        </item>
+        <item>
+            <item>Saturday\n</item>
+            <item>\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE</item>
+        </item>
+        <item>
+            <item>Sunday\n</item>
+            <item>\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE</item>
+        </item>
+    </string-array>
+
+    <string-array name="day_names">
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
+    </string-array>
+
+    <string-array name="time_values">
+        <item>12 am – 1 am</item>
+        <item>1 am – 2 am</item>
+        <item>2 am – 3 am</item>
+        <item>3 am – 4 am</item>
+        <item>4 am – 5 am</item>
+        <item>5 am – 6 am</item>
+        <item>6 am – 7 am</item>
+        <item>7 am – 8 am</item>
+        <item>8 am – 9 am</item>
+        <item>9 am – 10 am</item>
+        <item>10 am – 11 am</item>
+        <item>11 am – 12 pm</item>
+        <item>12 pm – 1 pm</item>
+        <item>1 pm – 2 pm</item>
+        <item>2 pm – 3 pm</item>
+        <item>3 pm – 4 pm</item>
+        <item>4 pm – 5 pm</item>
+        <item>5 pm – 6 pm</item>
+        <item>6 pm – 7 pm</item>
+        <item>7 pm – 8 pm</item>
+        <item>8 pm – 9 pm</item>
+        <item>9 pm – 10 pm</item>
+        <item>10 pm – 11 pm</item>
+        <item>11 pm – 12 am</item>
+    </string-array>
+
+    <string name="default_sched">\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AF\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE\u25AE</string>
 
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>

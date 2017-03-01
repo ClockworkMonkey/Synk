@@ -51,14 +51,26 @@
             android:layout_marginBottom="10dp"/>
 
         <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="17pt"
+        android:gravity="center"
+        android:id="@+id/txt_prefs"
+        android:text="Click to add preferences"
+        android:textSize="20sp"
+        android:clickable="true"
+        android:onClick="OnClick_update_prefs"
+
+        />
+
+        <TextView
             android:layout_width="fill_parent"
             android:layout_height="17pt"
             android:gravity="center"
-            android:id="@+id/txt_prefs"
-            android:text="click to add preferences"
+            android:id="@+id/txt_sched"
+            android:text="View/Edit Schedule"
             android:textSize="20sp"
             android:clickable="true"
-            android:onClick="OnClick_update_prefs"
+            android:onClick="OnClick_goto_sched"
 
             />
 

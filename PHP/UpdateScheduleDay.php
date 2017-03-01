@@ -5,13 +5,12 @@
 	define('DB','synk-app');
 
 	$con = mysqli_connect(HOST,USER,PASS,DB);
-	
-	//sets the status of the passed in user to the passed in status
 
-	$prefs = $_POST["prefs"];
 	$user = $_POST["username"];	
+	$day = $_POST["day"];
+	$avail = $_POST["sched"];
 	
-	$query = sprintf("UPDATE Users SET Prefernces='%s' WHERE UserName = '%s'", mysqli_real_escape_string($con,$prefs),mysqli_real_escape_string($con, $user));
+	$query = sprintf("UPDATE Schedule SET '%s'='%s' WHERE UserName = '%s'", mysqli_real_escape_string($con,$day),mysqli_real_escape_string($con, $avail), mysqli_real_escape_string($con, $username));
 	
 	$sql = mysqli_query($con, $query);
 	
