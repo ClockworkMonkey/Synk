@@ -9,10 +9,12 @@
 	
 	$con = mysqli_connect(HOST,USER,PASS,DB);
 	
+	//$user = "zxc@cxz.com";
 	$user = $_POST["username"];	
 	
-	$query = sprintf("SELECT Mon, Tues, Wed, Thur, Fri, Sat, Sun FROM Schedule WHERE UserName = '%s'", mysqli_real_escape_string($con, $user));
-
+	
+	$query = sprintf("SELECT Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday FROM Schedules WHERE UserName = '%s'", mysqli_real_escape_string($con, $user));
+	
 	$sql = mysqli_query($con, $query);
 	
 	if (!$sql) {
@@ -22,19 +24,19 @@
 	{
 		$row =  mysqli_fetch_array($sql);
 		echo 'MON';
-		echo $row['Mon'];
+		echo $row['Monday'];
 		echo 'TUES';
-		echo $row['Tues'];
+		echo $row['Tuesday'];
 		echo 'WED';
-		echo $row['Wed'];
+		echo $row['Wednesday'];
 		echo 'THUR';
-		echo $row['Thur'];
+		echo $row['Thursday'];
 		echo 'FRI';
-		echo $row['Fri'];
+		echo $row['Friday'];
 		echo 'SAT';
-		echo $row['Sat'];
+		echo $row['Saturday'];
 		echo 'SUN';
-		echo $row['Sun'];		
+		echo $row['Sunday'];		
 	}
 	
 	mysqli_close($con);

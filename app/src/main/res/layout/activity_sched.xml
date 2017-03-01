@@ -53,7 +53,7 @@
             android:layout_marginBottom="2dp"
 
             android:text="Update"
-            android:onClick="OnClick_update_sched (sched)" />
+            android:onClick="OnClick_update_sched" />
 
     </LinearLayout>
 </ScrollView>

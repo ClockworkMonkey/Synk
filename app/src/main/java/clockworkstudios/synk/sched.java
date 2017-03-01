@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static clockworkstudios.synk.MainMenu.PREFS_USERNAME_KEY;
+import static clockworkstudios.synk.R.array.day_names;
 import static clockworkstudios.synk.R.array.day_values;
 
 public class sched extends AppCompatActivity {
@@ -44,7 +45,8 @@ public class sched extends AppCompatActivity {
     public static final int READ_TIMEOUT=15000;
 
     ListView sched_lv = null;
-    ArrayList<Pair<String, ArrayList<Pair<String, String>>>> Schedule;
+    String[] day_name = null;
+    final ArrayList<Pair<String, String>> Schedule = new ArrayList<>();
     public String logged_in_user;
     public char free_unicode = '\u25AF';
     public char busy_unicode = '\u25AE';
@@ -55,6 +57,15 @@ public class sched extends AppCompatActivity {
         setContentView(R.layout.activity_sched);
 
         sched_lv = (ListView) findViewById(R.id.sched_list);
+
+        day_name = getResources().getStringArray(R.array.day_names);
+
+        //default value for Schedule, in case of connection failure
+        String default_sched = "111111110000000011111111";
+        for (int f = 0; f < day_name.length; f++)
+        {
+            Schedule.add(new Pair<>(day_name[f], default_sched));
+        }
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(sched.this );
         try {
@@ -84,6 +95,7 @@ public class sched extends AppCompatActivity {
 
                     item = item.replace(" ", "");
                     final String[] tmp = item.split("\n");
+                    final String day = tmp[0];
 
                     for (int i = 0; i < tmp[1].length(); i++)
                     {
@@ -151,13 +163,25 @@ public class sched extends AppCompatActivity {
                                         }
                                         if (sched_array.get(k).second == "1")
                                         {
-                                            re_built += busy_unicode;
+                                            re_built += "1";
                                         }
                                         else
                                         {
-                                            re_built += free_unicode;
+                                            re_built += "0";
                                         }
                                     }
+
+                                    for (int c = 0; c < Schedule.size(); c++)
+                                    {
+                                        if (Schedule.get(c).first.equals(day))
+                                        {
+                                            Schedule.set(c, new Pair<>(day, re_built));
+                                        }
+                                    }
+
+                                    re_built.replace('1', busy_unicode);
+                                    re_built.replace('0', free_unicode);
+
                                     tmp[0] += "\n " + re_built;
                                     ((TextView) view).setText(tmp[0]);
 
@@ -180,37 +204,10 @@ public class sched extends AppCompatActivity {
     {
         sched_lv = (ListView) findViewById(R.id.sched_list);
 
-        ArrayList<String> week =  new ArrayList<>();
-
-        for(int i = 0; i < sched_lv.getCount(); i++)
-        {
-            String item = sched_lv.getChildAt(i).toString();
-            String[] times = getResources().getStringArray(R.array.time_values);
-            String day_str = "";
-
-            item = item.replace(" ", "");
-            String[] tmp = item.split("\n");
-
-            for (int j = 0; j < tmp[1].length(); j++)
-            {
-                if (tmp[1].charAt(j) == busy_unicode)
-                {
-                    day_str += "1";
-                }
-                else
-                {
-                    day_str += "0";
-                }
-            }
-
-            String day = tmp[0];
-            week.add(day_str);
-        }
-
         String[] day_names = getResources().getStringArray(R.array.day_names);
         for (int i = 0; i < day_names.length; i++)
         {
-            (new AsyncUpdateSched_day()).execute(logged_in_user, day_names[i], week.get(i));
+            (new AsyncUpdateSched_day()).execute(logged_in_user, day_names[i], Schedule.get(i).second);
         }
 
     }
@@ -236,7 +233,7 @@ public class sched extends AppCompatActivity {
             try {
 
                 // Enter URL address where your php file resides
-                url = new URL("http://10.0.2.2/UpdateSchedDay.php");
+                url = new URL("http://10.0.2.2/UpdateScheduleDay.php");
 
             } catch (MalformedURLException e) {
 
@@ -308,8 +305,6 @@ public class sched extends AppCompatActivity {
             } finally {
                 conn.disconnect();
             }
-
-
         }
 
         @Override

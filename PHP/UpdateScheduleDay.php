@@ -9,9 +9,10 @@
 	$user = $_POST["username"];	
 	$day = $_POST["day"];
 	$avail = $_POST["sched"];
-	
-	$query = sprintf("UPDATE Schedule SET '%s'='%s' WHERE UserName = '%s'", mysqli_real_escape_string($con,$day),mysqli_real_escape_string($con, $avail), mysqli_real_escape_string($con, $username));
-	
+
+	$query = sprintf("UPDATE Schedules SET %s='%s' WHERE UserName = '%s'", mysqli_real_escape_string($con,$day),mysqli_real_escape_string($con, $avail), mysqli_real_escape_string($con, $user));
+		
+	//echo $query;
 	$sql = mysqli_query($con, $query);
 	
 	if (!$sql) {
