@@ -23,19 +23,32 @@
 	else
 	{
 		$row =  mysqli_fetch_array($sql);
-		echo 'MON';
+		echo 'Monday';
+		echo ':';
 		echo $row['Monday'];
-		echo 'TUES';
+		echo '_';
+		echo 'Tuesday';
+		echo ':';
 		echo $row['Tuesday'];
-		echo 'WED';
+		echo '_';
+		echo 'Wednesday';
+		echo ':';
 		echo $row['Wednesday'];
-		echo 'THUR';
+		echo '_';
+		echo 'Thursday';
+		echo ':';
 		echo $row['Thursday'];
-		echo 'FRI';
+		echo '_';
+		echo 'Friday';
+		echo ':';
 		echo $row['Friday'];
-		echo 'SAT';
+		echo '_';
+		echo 'Saturday';
+		echo ':';
 		echo $row['Saturday'];
-		echo 'SUN';
+		echo '_';
+		echo 'Sunday';
+		echo ':';
 		echo $row['Sunday'];		
 	}
 	

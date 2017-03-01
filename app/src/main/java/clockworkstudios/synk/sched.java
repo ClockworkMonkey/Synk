@@ -179,8 +179,8 @@ public class sched extends AppCompatActivity {
                                         }
                                     }
 
-                                    re_built.replace('1', busy_unicode);
-                                    re_built.replace('0', free_unicode);
+                                    re_built = re_built.replace('1', busy_unicode);
+                                    re_built = re_built.replace('0', free_unicode);
 
                                     tmp[0] += "\n " + re_built;
                                     ((TextView) view).setText(tmp[0]);
@@ -198,6 +198,8 @@ public class sched extends AppCompatActivity {
                 }
             });
         }
+
+        (new AsyncGetSched()).execute(logged_in_user);
     }
 
     public void OnClick_update_sched(View v)
@@ -314,15 +316,7 @@ public class sched extends AppCompatActivity {
 
             pdLoading.dismiss();
 
-            if (result.equalsIgnoreCase("true")) {
 
-
-            } else if (result.equalsIgnoreCase("false")) {
-
-                // If username and password does not match display a error message
-                Toast.makeText(sched.this, "Unable to update Schedule", Toast.LENGTH_LONG).show();
-
-            }
         }
     }
 
@@ -426,11 +420,35 @@ public class sched extends AppCompatActivity {
 
             pdLoading.dismiss();
 
-            //Toast.makeText(MainMenu.this, "Status synced from server.", Toast.LENGTH_LONG).show();
+            if (!result.equals("failure"))
+            {
+                sched_lv = (ListView) findViewById(R.id.sched_list);
+                String[] divided_result = result.split("_");
+                String[] divided_day;
+                String tmp = "";
 
-            Switch sw = (Switch)findViewById(R.id.busy_free_switch);
+                ArrayList<String> to_list = new ArrayList<>();
+                for (int i = 0; i < divided_result.length; i++)
+                {
+                    tmp = "";
+                    divided_day = divided_result[i].split(":");
+                    divided_day[0].replace(":", "");
+                    divided_day[0].replace("_", "");
+                    divided_day[1].replace(":", "");
+                    divided_day[1].replace("_", "");
 
-            if (result.equalsIgnoreCase("1")) {
+                    divided_day[1] = divided_day[1].replace('1', busy_unicode);
+                    divided_day[1] = divided_day[1].replace('0', free_unicode);
+                    tmp += divided_day[0] + '\n' + divided_day[1];
+                    to_list.add(tmp);
+
+                    if (divided_day[0].equals(Schedule.get(i).first))
+                    {
+                        Schedule.set(i, new Pair<String, String>(divided_day[0], divided_day[1]));
+                    }
+                }
+                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(sched.this, R.layout.sched_listview, to_list );
+                sched_lv.setAdapter(arrayAdapter);
             }
         }
     }
