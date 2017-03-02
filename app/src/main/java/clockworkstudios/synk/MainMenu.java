@@ -38,6 +38,8 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -50,9 +52,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -65,6 +71,8 @@ public class MainMenu extends AppCompatActivity {
 
     public static final String PREFS_USERNAME_KEY = "__USERNAME__";
 
+    public char free_unicode = '\u25AF';
+    public char busy_unicode = '\u25AE';
 
     private obj_friend friend_util;
     private ArrayList<obj_friend> friend_list;
@@ -188,7 +196,12 @@ public class MainMenu extends AppCompatActivity {
                     String item = ((TextView)view).getText().toString();
                     friend_util = friend_list.get(position);
 
+                    Calendar calendar = Calendar.getInstance();
+                    Date date = calendar.getTime();
+                    String curr_day = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.getTime());
+
                     (new AsyncGetProfilePicture_util()).execute(friend_util.username);
+                    (new AsyncGetSchedDay_util()).execute(friend_util.username, curr_day);
                     //getcalender
 
                     //format and create dialog box
@@ -206,6 +219,8 @@ public class MainMenu extends AppCompatActivity {
                     txtView.setText(friend_util.prefs);
                     TextView txtView2 = (TextView)dialog.findViewById(R.id.pop_up_title);
                     txtView2.setText(item);
+                    TextView txtView_sched = (TextView)dialog.findViewById(R.id.pop_up_sched);
+                    txtView_sched.setText(friend_util.curr_day_sched);
                     dialog.show();
 
                 }
@@ -1837,6 +1852,128 @@ public class MainMenu extends AppCompatActivity {
         }
     }
 
+
+    private class AsyncGetSchedDay_util extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/GetSchedDay.php");
+
+            } catch (MalformedURLException e) {
+
+                e.printStackTrace();
+                return "exception";
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0])
+                        .appendQueryParameter("day", params[1]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+
+                e1.printStackTrace();
+                return "exception";
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return ("unsuccessful");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "exception";
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+            if (!result.equals("failure"))
+            {
+                String[] divided_day;
+                String tmp = "";
+
+                tmp = "";
+                divided_day = result.split(":");
+                divided_day[0].replace(":", "");
+                divided_day[0].replace("_", "");
+                divided_day[1].replace(":", "");
+                divided_day[1].replace("_", "");
+
+                divided_day[1] = divided_day[1].replace('1', busy_unicode);
+                divided_day[1] = divided_day[1].replace('0', free_unicode);
+                tmp += divided_day[0] + '\n' + divided_day[1];
+                friend_util.curr_day_sched = tmp;
+            }
+        }
+    }
+
     private class AsyncGetStatus_util extends AsyncTask<String, String, String> {
         ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
         HttpURLConnection conn;
@@ -1979,6 +2116,7 @@ public class MainMenu extends AppCompatActivity {
         String name;
         String username;
         String prefs;
+        String curr_day_sched;
         Bitmap picture;
         int status;
     }

@@ -33,5 +33,14 @@
         android:layout_toRightOf="@id/pop_up_img"
         android:layout_below="@id/pop_up_title"/>
 
+    <TextView
+        android:id="@+id/pop_up_sched"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:paddingTop="14dp"
+        android:textSize="6dp"
+        android:layout_toRightOf="@id/pop_up_img"
+        android:layout_below="@id/pop_up_text"/>
 
 </RelativeLayout>
