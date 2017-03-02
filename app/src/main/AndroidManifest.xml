@@ -28,11 +28,12 @@
         </activity>
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
-        <activity android:name=".MainMenu"></activity>
-        <activity android:name=".Friends"></activity>
-        <activity android:name=".sign_up"></activity>
-        <activity android:name=".sched"></activity>
+            android:label="@string/title_activity_settings" />
+        <activity android:name=".MainMenu" />
+        <activity android:name=".Friends" />
+        <activity android:name=".sign_up" />
+        <activity android:name=".sched" />
+        <activity android:name=".events"></activity>
     </application>
 
 </manifest>

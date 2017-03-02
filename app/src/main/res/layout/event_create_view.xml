@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <TextView
+        android:id="@+id/pop_up_event_title"
+        android:paddingTop="10dp"
+        android:text="Event Title:"
+        android:textColor="#FF000000"
+        android:textSize="20dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/pop_up_edit_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:layout_toRightOf="@id/pop_up_event_title"
+        android:background="#efefef"
+        android:layout_alignBottom="@+id/pop_up_event_title"
+        android:layout_alignParentTop="true" />
+
+    <EditText
+        android:id="@+id/pop_up_edit_desc"
+        android:layout_width="fill_parent"
+        android:layout_height="80dp"
+        android:paddingLeft="8dp"
+        android:background="#efefef"
+        android:layout_below="@+id/pop_up_event_desc" />
+
+    <TextView
+        android:id="@+id/pop_up_event_desc"
+        android:paddingTop="10dp"
+        android:text="Description:"
+        android:textColor="#FF000000"
+        android:textSize="20dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="8dp"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pop_up_edit_title"
+        android:layout_toRightOf="@+id/pop_up_event_title"
+        android:layout_toEndOf="@+id/pop_up_event_title"
+        android:layout_marginLeft="14dp"
+        android:layout_marginStart="14dp" />
+
+    <TextView
+        android:id="@+id/pop_up_event_location"
+        android:paddingTop="10dp"
+        android:text="Location:"
+        android:textColor="#FF000000"
+        android:textSize="20dp"
+        android:paddingBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:paddingLeft="8dp"
+        android:layout_below="@id/pop_up_edit_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/pop_up_event_datetime"
+        android:paddingTop="10dp"
+        android:text="Date:"
+        android:textColor="#FF000000"
+        android:textSize="20dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="8dp"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/pop_up_event_location"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/pop_up_edit_location"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:paddingBottom="20dp"
+        android:background="#efefef"
+        android:layout_above="@+id/pop_up_event_datetime"
+        android:layout_toRightOf="@+id/pop_up_event_location" />
+
+    <EditText
+        android:id="@+id/pop_up_edit_datetime"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:background="#efefef"
+        android:layout_alignBottom="@+id/pop_up_event_datetime"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toRightOf="@+id/pop_up_event_location"
+        android:layout_toEndOf="@+id/pop_up_event_location"
+        android:layout_below="@+id/pop_up_event_location" />
+
+    <Button
+        android:text="Create"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pop_up_event_datetime"
+        android:id="@+id/btn_create"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+</RelativeLayout>

@@ -56,23 +56,47 @@
         android:gravity="center"
         android:id="@+id/txt_prefs"
         android:text="Click to add preferences"
+            android:textColor="#000000"
         android:textSize="20sp"
         android:clickable="true"
         android:onClick="OnClick_update_prefs"
 
         />
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="17pt"
-            android:gravity="center"
-            android:id="@+id/txt_sched"
-            android:text="View/Edit Schedule"
-            android:textSize="20sp"
-            android:clickable="true"
-            android:onClick="OnClick_goto_sched"
+        <LinearLayout
+            android:id="@+id/LinearLayout03"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:layout_alignParentBottom="true">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="17pt"
+                android:gravity="center"
+                android:id="@+id/txt_sched"
+                android:text="Schedule"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:clickable="true"
+                android:onClick="OnClick_goto_sched"
+                />
+            <Space
+                android:layout_width="100dp"
+                android:layout_height="30dp"/>
+                      <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="17pt"
+                android:gravity="center"
+                android:id="@+id/txt_events"
+                android:text="Events"
+                android:textSize="20sp"
+                          android:textColor="#000000"
+                android:clickable="true"
+                android:onClick="OnClick_goto_events"
+                />
 
-            />
+        </LinearLayout>
+
 
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"

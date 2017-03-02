@@ -392,6 +392,12 @@ public class MainMenu extends AppCompatActivity {
         startActivity(intnt);
     }
 
+    public void OnClick_goto_events(View v)
+    {
+        Intent intnt = new Intent(MainMenu.this, events.class);
+        startActivity(intnt);
+    }
+
     // onclick event for listview of friends,
     // call GetPreferences, GetImage, GetStatus, GetCalander
     // format and display data in a dialog
