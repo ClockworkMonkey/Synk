@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <TextView
+        android:id="@+id/pop_up_event_desc2"
+        android:paddingTop="10dp"
+        android:text="Description:"
+        android:textColor="#FF000000"
+        android:textSize="20dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="8dp"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pop_up_event_title2"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/pop_up_event_title2"
+        android:paddingTop="10dp"
+        android:text="Event Title:"
+        android:textColor="#FF000000"
+        android:textSize="20dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="8dp"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/pop_up_event_datetime2"
+        android:paddingTop="10dp"
+        android:text="Date:"
+        android:textColor="#FF000000"
+        android:textSize="20dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pop_up_event_desc2"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/pop_up_event_location2"
+        android:paddingTop="10dp"
+        android:text="Location:"
+        android:textColor="#FF000000"
+        android:textSize="20dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/pop_up_event_datetime2"
+        android:layout_centerHorizontal="true" />
+
+    <ListView
+        android:id="@+id/event_friendlist"
+        android:scrollbars="vertical"
+        android:paddingTop="10dp"
+        android:layout_width="fill_parent"
+        android:layout_height="277dp"
+        android:layout_gravity="fill_vertical"
+        android:layout_below="@+id/pop_up_event_location2">
+    </ListView>
+
+</RelativeLayout>

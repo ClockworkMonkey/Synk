@@ -33,7 +33,8 @@
         <activity android:name=".Friends" />
         <activity android:name=".sign_up" />
         <activity android:name=".sched" />
-        <activity android:name=".events"></activity>
+        <activity android:name=".events" />
+        <activity android:name=".event_view"></activity>
     </application>
 
 </manifest>

@@ -75,7 +75,7 @@ public class MainMenu extends AppCompatActivity {
     public char busy_unicode = '\u25AE';
 
     private obj_friend friend_util;
-    private ArrayList<obj_friend> friend_list;
+    public static ArrayList<obj_friend> friend_list;
     private static int RESULT_LOAD_IMG = 1;
 
     public String logged_in_user;
@@ -2118,7 +2118,7 @@ public class MainMenu extends AppCompatActivity {
 
     }
 
-    class obj_friend{
+    public class obj_friend{
         String name;
         String username;
         String prefs;
