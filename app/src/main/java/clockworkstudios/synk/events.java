@@ -91,6 +91,8 @@ public class events extends AppCompatActivity {
         (new events.AsyncGetEvents()).execute(logged_in_user);
     }
 
+
+    //consider converting to open new inent. would be much easier that way to actually use data and time pickers
     public void OnClick_new_event(View v)
     {
         final Dialog dialog = new Dialog(events.this);
