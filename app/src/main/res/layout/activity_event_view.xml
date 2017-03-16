@@ -67,26 +67,37 @@
         android:layout_below="@+id/pop_up_event_location2">
     </ListView>
 
+
     <Button
         android:text="Invite friends"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/btn_add"
-        android:layout_alignBaseline="@+id/btn_remove"
-        android:layout_alignBottom="@+id/btn_remove"
-        android:layout_toLeftOf="@+id/pop_up_event_datetime2"
-        android:layout_toStartOf="@+id/pop_up_event_datetime2"
-        android:onClick="OnClick_add_invitees" />
+        android:onClick="OnClick_add_invitees"
+        android:layout_alignTop="@+id/btn_remove"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:text="Leave Event"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_leave"
+        android:onClick="OnClick_leave_delete_event"
+        android:layout_alignBaseline="@+id/btn_add"
+        android:layout_alignBottom="@+id/btn_add"
+        android:layout_alignRight="@+id/pop_up_event_title2"
+        android:layout_alignEnd="@+id/pop_up_event_title2" />
 
     <Button
         android:text="remove friends"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="28dp"
+        android:layout_marginBottom="24dp"
         android:id="@+id/btn_remove"
+        android:onClick="OnClick_remove_invitees"
         android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/pop_up_event_datetime2"
-        android:layout_toEndOf="@+id/pop_up_event_datetime2"
-        android:onClick="OnClick_remove_invitees" />
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

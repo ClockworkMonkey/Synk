@@ -12,6 +12,8 @@
 	$query = sprintf("SELECT * FROM Friends WHERE Friend = '%s' AND Confirmed = '0'", mysqli_real_escape_string($con, $user));
 	
 	$sql = mysqli_query($con, $query);
+	
+	
 		
 	if(mysqli_num_rows($sql)!=0){		
 		while($row = $sql->fetch_array())
@@ -24,6 +26,8 @@
 	{
 		//do nothing if there are no pending requests
 	}
+	
+	
 	
 	mysqli_close($con);
 ?>

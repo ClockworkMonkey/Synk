@@ -63,6 +63,9 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import static clockworkstudios.synk.events.READ_TIMEOUT;
+import static clockworkstudios.synk.sched.CONNECTION_TIMEOUT;
+
 
 public class MainMenu extends AppCompatActivity {
 
@@ -232,6 +235,7 @@ public class MainMenu extends AppCompatActivity {
         (new AsyncGetPrefs()).execute(logged_in_user);
         (new AsyncGetFriends()).execute(logged_in_user);
         (new AsyncCheckForNewRequests()).execute(logged_in_user);
+        (new AsyncCheckForNewEvents()).execute(logged_in_user);
         (new AsyncGetProfilePicture()).execute(logged_in_user);
     }
 
@@ -1689,6 +1693,400 @@ public class MainMenu extends AppCompatActivity {
             }
             else {
                 Toast.makeText(MainMenu.this, "Could not retrieve friend list", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private class AsyncDeclineEvent extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String res = "";
+
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/DeclineEvent.php");
+
+            } catch (MalformedURLException e) {
+
+                e.printStackTrace();
+                return res;
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0])
+                        .appendQueryParameter("eventID", params[1]);
+
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+
+                e1.printStackTrace();
+                return res;
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line = "";
+                    String[] line2;
+                    String[] line3;
+
+                    Pair<String, String> tmp_pair;
+                    Integer toggle = 0;
+
+                    //since we are returning an array of pairs(name and status)
+                    // and we are only reading one line at a time, we toggle between the tmp variable
+                    // and filling the array
+
+                    while ((line = reader.readLine()) != null) {
+                        res = line;
+                    }
+
+                    // Pass data to onPostExecute method
+                    return res;
+
+                } else {
+                    return res;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                return res;
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+        }
+    }
+
+    private class AsyncAcceptEvent extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String res = "";
+
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/AcceptEvent.php");
+
+            } catch (MalformedURLException e) {
+
+                e.printStackTrace();
+                return res;
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0])
+                        .appendQueryParameter("eventID", params[1]);
+
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+
+                e1.printStackTrace();
+                return res;
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line = "";
+                    String[] line2;
+                    String[] line3;
+
+                    Pair<String, String> tmp_pair;
+                    Integer toggle = 0;
+
+                    //since we are returning an array of pairs(name and status)
+                    // and we are only reading one line at a time, we toggle between the tmp variable
+                    // and filling the array
+
+                    while ((line = reader.readLine()) != null) {
+                        res = line;
+                    }
+
+                    // Pass data to onPostExecute method
+                    return res;
+
+                } else {
+                    return res;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                return res;
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+        }
+    }
+
+    private class AsyncCheckForNewEvents extends AsyncTask<String, String, List<String>> {
+        ProgressDialog pdLoading = new ProgressDialog(MainMenu.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected List<String> doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/CheckForEvents.php");
+
+            } catch (MalformedURLException e) {
+
+                e.printStackTrace();
+                return null;
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+
+                e1.printStackTrace();
+                return null;
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    List<String> result = new ArrayList<>();
+                    String line;
+                    String[]  line2;
+
+                    while ((line = reader.readLine()) != null) {
+                        line2 = line.split("/");
+                        for (int i = 0; i < line2.length; i++)
+                        {
+                            result.add(line2[i]);
+                        }
+                    }
+
+                    // Pass data to onPostExecute method, will pass the name of the person requesting
+                    return result;
+
+                } else {
+
+                    return null;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                conn.disconnect();
+            }
+
+
+        }
+
+        @Override
+        protected void onPostExecute(List<String> result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+
+            if (!result.isEmpty()) {
+
+                final List<String> results = result;
+
+                int i = 1;
+
+                for (final String event : result)
+                {
+                    final String[] dividedStr = event.split(",");
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainMenu.this);
+
+                    StringBuilder title = new StringBuilder();
+                    title.append("Event ");
+                    title.append(i);
+                    title.append(" of ");
+                    title.append(results.size());
+                    title.append(".");
+
+                    StringBuilder message = new StringBuilder();
+                    message.append(dividedStr[0]);
+                    message.append(" - ");
+                    message.append(dividedStr[1]);
+
+                    builder.setTitle(title)
+                            .setMessage(message);
+                    builder.setPositiveButton("Accept", new DialogInterface.OnClickListener(){
+                        public void onClick(DialogInterface dialog, int id) {
+                            // add accepted  fried to list
+                            (new AsyncAcceptEvent()).execute(logged_in_user, dividedStr[2]);
+                        }
+                    });
+
+                    builder.setNegativeButton("Decline", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            (new AsyncDeclineEvent()).execute(logged_in_user, dividedStr[2]);
+                        }
+                    });
+
+                    AlertDialog dialog = builder.create();
+
+                    dialog.show();
+                }
+
+
+
+            } else {
+
+                // If username and password does not match display a error message
+                Toast.makeText(MainMenu.this, "No new events", Toast.LENGTH_LONG).show();
+
             }
         }
     }

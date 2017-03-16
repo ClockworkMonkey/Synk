@@ -33,6 +33,8 @@
 			echo $row2['Name'];
 			echo ",";
 			echo $row['accepted'];
+			echo ",";
+			echo $row['username'];
 			echo "/";			
 		}
 	}

@@ -73,6 +73,20 @@ public class event_view extends AppCompatActivity {
 
     }
 
+    public void OnClick_leave_delete_event(View v)
+    {
+        Button leave = (Button) findViewById(R.id.btn_leave);
+        if (leave.getText().equals("Delete Event"))
+        {
+            (new AsyncDelete()).execute(logged_in_user, event_util.event_id);
+        }
+        else
+        {
+            (new AsyncLeave()).execute(logged_in_user, event_util.event_id);
+        }
+
+    }
+
     public void OnClick_add_invitees(View v)
     {
         //create dialog, list of friends, checkmarks by eachh, send inviites
@@ -336,15 +350,18 @@ public class event_view extends AppCompatActivity {
             pdLoading.dismiss();
             Button add = (Button) findViewById(R.id.btn_add);
             Button rem = (Button) findViewById(R.id.btn_remove);
+            Button leave = (Button) findViewById(R.id.btn_leave);
 
             if (!result.isEmpty()) {
                 if (result.equals("manager"))
                 {
+                    leave.setText("Delete Event");
                     add.setEnabled(true);
                     rem.setEnabled(true);
                 }
                 else
                 {
+                    leave.setText("Leave Event");
                     add.setEnabled(false);
                     rem.setEnabled(false);
                 }
@@ -516,6 +533,239 @@ public class event_view extends AppCompatActivity {
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("username", params[0])
                         .appendQueryParameter("eventID", params[1]);
+
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+
+                e1.printStackTrace();
+                return res;
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line = "";
+                    String[] line2;
+                    String[] line3;
+
+                    Pair<String, String> tmp_pair;
+                    Integer toggle = 0;
+                    event_view.obj_event tmp_fr = new event_view.obj_event();
+
+                    //since we are returning an array of pairs(name and status)
+                    // and we are only reading one line at a time, we toggle between the tmp variable
+                    // and filling the array
+
+                    while ((line = reader.readLine()) != null) {
+                        res = line;
+                    }
+
+                    // Pass data to onPostExecute method
+                    return res;
+
+                } else {
+                    return res;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                return res;
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+        }
+    }
+
+    private class AsyncLeave extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(event_view.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String res = "";
+
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/DeclineEvent.php");
+
+            } catch (MalformedURLException e) {
+
+                e.printStackTrace();
+                return res;
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0])
+                        .appendQueryParameter("eventID", params[0]);
+
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+
+                e1.printStackTrace();
+                return res;
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line = "";
+                    String[] line2;
+                    String[] line3;
+
+                    Pair<String, String> tmp_pair;
+                    Integer toggle = 0;
+                    event_view.obj_event tmp_fr = new event_view.obj_event();
+
+                    //since we are returning an array of pairs(name and status)
+                    // and we are only reading one line at a time, we toggle between the tmp variable
+                    // and filling the array
+
+                    while ((line = reader.readLine()) != null) {
+                        res = line;
+                    }
+
+                    // Pass data to onPostExecute method
+                    return res;
+
+                } else {
+                    return res;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                return res;
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+        }
+    }
+
+    private class AsyncDelete extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(event_view.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String res = "";
+
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/DeleteEvent.php");
+
+            } catch (MalformedURLException e) {
+
+                e.printStackTrace();
+                return res;
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("eventID", params[0]);
 
                 String query = builder.build().getEncodedQuery();
 

@@ -35,7 +35,7 @@
 	$row =  mysqli_fetch_array($sql);
 	$id = $row['Event ID'];
 	
-	$stmt2 = sprintf("INSERT INTO Invitees(username, eventID, accepted, manager) VALUES( '%s', %i, 1, 1)", mysqli_real_escape_string($con, $manager), mysqli_real_escape_string($con, $id));		
+	$stmt2 = sprintf("INSERT INTO Invitees(username, eventID, accepted, manager) VALUES( '%s', %s, 1, 1)", mysqli_real_escape_string($con, $manager), mysqli_real_escape_string($con, $id));		
 
 	if(!$sql)
 	{
