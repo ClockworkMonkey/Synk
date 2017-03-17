@@ -34,7 +34,8 @@
         <activity android:name=".sign_up" />
         <activity android:name=".sched" />
         <activity android:name=".events" />
-        <activity android:name=".event_view"></activity>
+        <activity android:name=".event_view" />
+        <activity android:name=".event_create"></activity>
     </application>
 
 </manifest>

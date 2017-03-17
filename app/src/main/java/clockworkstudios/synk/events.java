@@ -95,7 +95,9 @@ public class events extends AppCompatActivity {
     //consider converting to open new inent. would be much easier that way to actually use data and time pickers
     public void OnClick_new_event(View v)
     {
-        final Dialog dialog = new Dialog(events.this);
+        Intent intnt = new Intent(events.this, event_create.class);
+        startActivity(intnt);
+        /*final Dialog dialog = new Dialog(events.this);
         dialog.setContentView(R.layout.event_create_view);
         dialog.setTitle("New Event");
 
@@ -127,7 +129,7 @@ public class events extends AppCompatActivity {
 
             }
         });
-        dialog.show();
+        dialog.show();*/
     }
 
     public void OnClick_refresh_events(View v)
@@ -223,7 +225,7 @@ public class events extends AppCompatActivity {
 
                     while ((line = reader.readLine()) != null) {
                         line = line.substring(0, line.length()-1);
-                        line2 = line.split("/");
+                        line2 = line.split("_");
 
                         for(int i = 0; i < line2.length; i++)
                         {

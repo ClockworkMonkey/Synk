@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -27,7 +28,10 @@ import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static clockworkstudios.synk.events.READ_TIMEOUT;
 import static clockworkstudios.synk.events.event_util;
@@ -40,6 +44,15 @@ public class event_view extends AppCompatActivity {
     private ArrayList<String> attendee_list_usernames;
     public static final String PREFS_USERNAME_KEY = "__USERNAME__";
     public String logged_in_user;
+    String sched_util;
+    boolean conflict;
+    int hour_util;
+    int index;
+
+
+
+    public char free_unicode = '\u25AF';
+    public char busy_unicode = '\u25AE';
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,7 +159,33 @@ public class event_view extends AppCompatActivity {
                         // here we are trying to retrieve the selected items indices
                         String selectedIndex = "";
                         for(Integer i : mSelectedItems){
-                            (new AsyncInvite()).execute(MainMenu.friend_list.get(i).username, events.event_util.event_id);
+                            String event_datetime = events.event_util.date_time;
+                            String[] tmp = event_datetime.split(" ");
+                            String date = tmp[0];
+                            String[] time = tmp[1].split(":");
+                            String hour = time[0];
+                            hour_util = Integer.parseInt(hour);
+                            if(time[1].contains("pm"))
+                            {
+                                 hour_util += 12;
+                            }
+
+                            SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+                            Date convertedDate = new Date();
+
+                            try {
+                                convertedDate = format.parse(date);
+                            } catch (ParseException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+
+                            SimpleDateFormat dayfmrt = new SimpleDateFormat("EEEE");
+                            String Day_of_week = dayfmrt.format(convertedDate);
+                            index = i;
+
+                            (new AsyncGetSchedDay()).execute(MainMenu.friend_list.get(i).username, Day_of_week);
+
                         }
 
                     }
@@ -988,6 +1027,138 @@ public class event_view extends AppCompatActivity {
 
             }
 
+        }
+    }
+
+    private class AsyncGetSchedDay extends AsyncTask<String, String, String> {
+        ProgressDialog pdLoading = new ProgressDialog(event_view.this);
+        HttpURLConnection conn;
+        URL url = null;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            //this method will be running on UI thread
+            pdLoading.setMessage("\tLoading...");
+            pdLoading.setCancelable(false);
+            pdLoading.show();
+
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+
+                // Enter URL address where your php file resides
+                url = new URL("http://10.0.2.2/GetSchedDay.php");
+
+            } catch (MalformedURLException e) {
+
+                e.printStackTrace();
+                return "exception";
+            }
+            try {
+                // Setup HttpURLConnection class to send and receive data from php and mysql
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(READ_TIMEOUT);
+                conn.setConnectTimeout(CONNECTION_TIMEOUT);
+                conn.setRequestMethod("POST");
+
+                // setDoInput and setDoOutput method depict handling of both send and receive
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Append parameters to URL
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("username", params[0])
+                        .appendQueryParameter("day", params[1]);
+                String query = builder.build().getEncodedQuery();
+
+                // Open connection for sending data
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                os.close();
+                conn.connect();
+
+            } catch (IOException e1) {
+
+                e1.printStackTrace();
+                return "exception";
+            }
+
+            try {
+
+                int response_code = conn.getResponseCode();
+
+                // Check if successful connection made
+                if (response_code == HttpURLConnection.HTTP_OK) {
+
+                    // Read data sent from server
+                    InputStream input = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    // Pass data to onPostExecute method
+                    return (result.toString());
+
+                } else {
+
+                    return ("unsuccessful");
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "exception";
+            } finally {
+                conn.disconnect();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            //this method will be running on UI thread
+
+            pdLoading.dismiss();
+
+            if (!result.equals("failure"))
+            {
+                String[] divided_day;
+                String tmp = "";
+
+                tmp = "";
+                divided_day = result.split(":");
+                divided_day[0].replace(":", "");
+                divided_day[0].replace("_", "");
+                divided_day[1].replace(":", "");
+                divided_day[1].replace("_", "");
+
+                divided_day[1] = divided_day[1].replace('1', busy_unicode);
+                divided_day[1] = divided_day[1].replace('0', free_unicode);
+                tmp += divided_day[0] + '\n' + divided_day[1];
+                sched_util = tmp;
+
+                if (divided_day[1].charAt(hour_util-1) == busy_unicode)
+                {
+                    conflict = true;
+                    Toast.makeText(event_view.this, "ERRROR: That person has a time conflict this week", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    conflict = false;
+                    (new AsyncInvite()).execute(MainMenu.friend_list.get(index).username, events.event_util.event_id);
+                }
+            }
         }
     }
 }

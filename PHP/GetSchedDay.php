@@ -12,7 +12,7 @@
 	//$user = "zxc@cxz.com";
 	//$day = "Friday";
 	$user = $_POST["username"];	
-		$day = $_POST["day"];
+	$day = $_POST["day"];
 	
 	
 	$query = sprintf("SELECT %s FROM Schedules WHERE UserName = '%s'", mysqli_real_escape_string($con, $day), mysqli_real_escape_string($con, $user));

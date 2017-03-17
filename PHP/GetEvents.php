@@ -40,7 +40,7 @@
 			echo $row['Time'];
 			echo ",";
 			echo $row['EventID'];
-			echo "/";			
+			echo "_";			
 		}
 	}
 	
